@@ -1005,7 +1005,18 @@ firefox chromium nautilus mousepad galculator pavucontrol blueman libreoffice vl
 jetbrains-mono-fonts-all fastfetch mako stow
 ```
 
-`stow` is only needed to install the dotfiles repo (section 10).
+`stow` is only needed to install the dotfiles repo (section 10), and
+`python3-gobject` only to regenerate the GTK4 theme (6.2).
+
+In the repo, `install-packages.sh` installs these on Fedora (dnf), Arch
+(pacman, plus `yay`/`paru` for AUR packages) or Debian/Ubuntu (apt). A table
+in the script gives each package's name per distro, with fallbacks such as
+`firefox/firefox-esr`; every name is checked with `dnf info`, `pacman -Si`
+(then the AUR helper) or `apt-cache show` before installing, and anything
+not found is listed rather than failing the run. Verified 2026-09-26: on this
+Fedora machine all 26 resolve; the Arch and Debian paths were exercised with
+stand-in package managers (AUR fallback, alternative names, not-found
+report), not on real Arch or Debian systems.
 
 `mako` is installed but has no config and is not running (see 8).
 Flatpak is not in use; no Flatpaks are installed.
@@ -1067,7 +1078,7 @@ dotfiles/
   bash/.bashrc
   firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # not stowed, see below
   scripts/gen-gtk4-crimson.py                                    # not stowed (6.2)
-  packages.txt          # section 7
+  install-packages.sh   # section 7
   install.sh
   README.md             # this spec, condensed
 ```
@@ -1090,7 +1101,7 @@ pre-switch files were backed up locally.
 ## 11. Rebuild checklist
 
 1. Install Fedora Asahi Remix 44 (minimal), log in on tty1.
-2. `sudo dnf install` the section 7 packages.
+2. Run `./install-packages.sh` (section 7).
 3. Create `~/Pictures`; place a wallpaper; fix paths in `autostart` and `rc.xml`.
 4. Install the configs from sections 2-5 (or `stow` the repo).
 5. Add the dark-mode launcher overrides (6.1, 6.2), the Crimson Dark app files

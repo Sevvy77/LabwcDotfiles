@@ -150,7 +150,7 @@ Installed. Still needed:
     labwc/.config/labwc/autostart and rc.xml).
   - Start labwc on login (see SPEC.md section 2) if not already configured.
     If labwc is already running: labwc -r, and restart sfwbar.
-  - Install packages.txt via your package manager first, if you haven't.
+  - Install the software first with ./install-packages.sh, if you haven't.
   - After a GTK4 upgrade, regenerate the Volume Control theme:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
 EOF

@@ -24,7 +24,7 @@ gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad 
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
 applications/.local/share/applications/*.desktop   # theme overrides + custom launchers
 bash/.bashrc
-packages.txt   # dnf package list
+install-packages.sh   # installs the software (dnf, pacman+AUR, or apt)
 install.sh
 ```
 
@@ -41,9 +41,16 @@ Mousepad's `crimson-dark` colour scheme (set with `gsettings`).
 ## Install
 
 ```sh
-sudo dnf install $(cat packages.txt)
-./install.sh
+./install-packages.sh   # the software: detects dnf, pacman or apt
+./install.sh            # the config files
 ```
+
+`install-packages.sh` works on Fedora, Arch and Debian/Ubuntu. It has one
+table mapping each package to its name on each distro, checks every name
+against your package manager before installing, and lists anything it can't
+find instead of failing. On Arch, packages missing from the official repos
+(such as `sfwbar`) come from the AUR if `yay` or `paru` is installed. Run
+`./install-packages.sh --dry-run` to see what it would install.
 
 `install.sh` stows every package into `$HOME`, fills in the one `.desktop`
 file that needs an absolute path, applies the non-stowable theme pieces
