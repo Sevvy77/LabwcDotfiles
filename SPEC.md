@@ -441,7 +441,11 @@ notebook > header { background-color: #140c0d; }
 
 - `spotify-web.desktop`: Chromium in app mode for `https://open.spotify.com`,
   own profile dir, `StartupWMClass=spotify-web`, generic audio icon.
-  Use `$HOME`, not an absolute path, when publishing.
+  The repo copy has two placeholders that `install.sh` fills in when it
+  generates the real file: `__HOME__` (`.desktop` files don't expand `$HOME`)
+  and `__CHROMIUM__`, Chromium's command, which is `chromium-browser` on
+  Fedora and `chromium` on Arch and Debian. If Chromium isn't installed yet,
+  `install.sh` warns, uses `chromium`, and corrects it on the next run.
 - `claude-code-url-handler.desktop`: registers `claude-cli://` URLs
   (`mimeapps.list`). Created by Claude Code; omit from the repo.
 

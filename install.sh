@@ -2,7 +2,8 @@
 # Installs this repo's packages into $HOME with GNU Stow, then does the parts
 # of the Crimson Dark theme that can't be symlinked:
 #   - spotify-web.desktop needs an absolute path (.desktop Exec lines are not
-#     variable-expanded by spec, so it can't just be "$HOME")
+#     variable-expanded by spec, so it can't just be "$HOME") and the local
+#     name of Chromium's command
 #   - galculator display colours (galculator rewrites its config on exit,
 #     which would replace a stowed symlink)
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
@@ -13,6 +14,16 @@
 #                                  # extras: galculator mousepad firefox)
 set -euo pipefail
 cd "$(dirname "$0")"
+
+# spotify-web.desktop is generated from the repo copy: __HOME__ becomes the
+# home path and __CHROMIUM__ the Chromium command, which is chromium-browser
+# on Fedora and chromium on Arch and Debian.
+spotify_src=applications/.local/share/applications/spotify-web.desktop
+spotify_dst="$HOME/.local/share/applications/spotify-web.desktop"
+chromium_cmds=(chromium-browser chromium)
+render_spotify() {
+  sed -e "s|__HOME__|$HOME|g" -e "s|__CHROMIUM__|$1|g" "$spotify_src"
+}
 
 stow_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk4 gtksourceview dbus)
 extras_all=(galculator mousepad firefox)
@@ -36,14 +47,17 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
     echo "GNU Stow is required (dnf install stow / apt install stow)." >&2
     exit 1
   fi
-  # A previous run replaced spotify-web.desktop's symlink with a filled-in
-  # copy (see below). Remove it if it's still exactly that, so stow can
-  # re-link; a hand-edited copy is left alone and stow reports the conflict.
-  spotify_src=applications/.local/share/applications/spotify-web.desktop
-  spotify_dst="$HOME/.local/share/applications/spotify-web.desktop"
-  if [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ] &&
-     sed "s|__HOME__|$HOME|g" "$spotify_src" | cmp -s - "$spotify_dst"; then
-    rm "$spotify_dst"
+  # A previous run replaced spotify-web.desktop's symlink with a generated
+  # copy (see below). Remove it if it's still exactly that, with either
+  # Chromium command, so stow can re-link; a hand-edited copy is left alone
+  # and stow reports the conflict.
+  if [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ]; then
+    for c in "${chromium_cmds[@]}"; do
+      if render_spotify "$c" | cmp -s - "$spotify_dst"; then
+        rm "$spotify_dst"
+        break
+      fi
+    done
   fi
 
   # --no-folding: create real directories and link individual files. With
@@ -53,15 +67,19 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   stow -v --no-folding -t "$HOME" "${stow_pkgs[@]}"
 fi
 
-# spotify-web.desktop needs the absolute home path. Replace the stowed
-# symlink with a real, filled-in copy so the repo keeps its __HOME__ placeholder.
-desktop_file="$HOME/.local/share/applications/spotify-web.desktop"
-if [ -L "$desktop_file" ]; then
-  src=$(readlink -f "$desktop_file")
-  rm "$desktop_file"
-  sed "s|__HOME__|$HOME|g" "$src" > "$desktop_file"
-elif [ -e "$desktop_file" ]; then
-  sed -i "s|__HOME__|$HOME|g" "$desktop_file"
+# Replace the stowed spotify-web.desktop symlink with a generated copy, so
+# the repo keeps its placeholders.
+if [ -L "$spotify_dst" ]; then
+  chromium=""
+  for c in "${chromium_cmds[@]}"; do
+    command -v "$c" >/dev/null && { chromium=$c; break; }
+  done
+  if [ -z "$chromium" ]; then
+    chromium=chromium
+    echo "spotify: Chromium not found; using 'chromium'. Re-run after installing it." >&2
+  fi
+  rm "$spotify_dst"
+  render_spotify "$chromium" > "$spotify_dst"
 fi
 
 install_galculator() {

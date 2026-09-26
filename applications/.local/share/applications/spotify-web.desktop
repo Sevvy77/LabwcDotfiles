@@ -2,7 +2,7 @@
 Type=Application
 Name=Spotify
 Comment=Spotify web player
-Exec=chromium-browser --app=https://open.spotify.com --class=spotify-web --user-data-dir=__HOME__/.local/share/spotify-web
+Exec=__CHROMIUM__ --app=https://open.spotify.com --class=spotify-web --user-data-dir=__HOME__/.local/share/spotify-web
 Icon=audio-x-generic
 Categories=Audio;Music;Player;AudioVideo;
 StartupWMClass=spotify-web
