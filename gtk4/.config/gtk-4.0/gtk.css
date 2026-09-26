@@ -1,0 +1,37 @@
+/* Crimson Dark for libadwaita apps. Only applies to apps running in dark
+   mode (Nautilus, Clocks are forced dark); light-mode apps are untouched. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent-bg-color: #c0303a;
+    --accent-fg-color: #f5e9e6;
+    --accent-color: #ff7a7f;
+    --destructive-bg-color: #8f2530;
+    --destructive-fg-color: #f5e9e6;
+    --destructive-color: #ff7a7f;
+
+    --window-bg-color: #1a1012;
+    --window-fg-color: #e8d5d0;
+    --view-bg-color: #1f1416;
+    --view-fg-color: #e8d5d0;
+    --headerbar-bg-color: #140c0d;
+    --headerbar-fg-color: #e8d5d0;
+    --headerbar-backdrop-color: #1a1012;
+    --headerbar-shade-color: rgba(0, 0, 0, 0.5);
+    --sidebar-bg-color: #140c0d;
+    --sidebar-fg-color: #e8d5d0;
+    --sidebar-backdrop-color: #1a1012;
+    --sidebar-shade-color: rgba(0, 0, 0, 0.4);
+    --secondary-sidebar-bg-color: #1a1012;
+    --secondary-sidebar-fg-color: #e8d5d0;
+    --secondary-sidebar-backdrop-color: #1a1012;
+    --card-bg-color: #2e1b1e;
+    --card-fg-color: #e8d5d0;
+    --dialog-bg-color: #1f1416;
+    --dialog-fg-color: #e8d5d0;
+    --popover-bg-color: #2e1b1e;
+    --popover-fg-color: #e8d5d0;
+    --thumbnail-bg-color: #2e1b1e;
+    --thumbnail-fg-color: #e8d5d0;
+    --border-color: rgba(192, 48, 58, 0.25);
+  }
+}

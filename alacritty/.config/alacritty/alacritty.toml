@@ -1,0 +1,47 @@
+[font]
+normal = { family = "JetBrains Mono", style = "Regular" }
+[window]
+opacity = 0.9
+dimensions = { columns = 124, lines = 30 }
+
+# Colors (Crimson Dark)
+
+# Default colors
+[colors.primary]
+background = '#1f1416'
+foreground = '#e8d5d0'
+
+[colors.cursor]
+text   = '#1f1416'
+cursor = '#e5484d'
+
+[colors.selection]
+text       = '#f5e9e6'
+background = '#3a2226'
+
+# Normal colors
+[colors.normal]
+black   = '#3a2528'
+red     = '#e5484d'
+green   = '#a3b07a'
+yellow  = '#e0a867'
+blue    = '#7f9cb4'
+magenta = '#c77da0'
+cyan    = '#86b0a8'
+white   = '#e8d5d0'
+
+# Bright colors
+[colors.bright]
+black   = '#3a2528'
+red     = '#e5484d'
+green   = '#a3b07a'
+yellow  = '#e0a867'
+blue    = '#7f9cb4'
+magenta = '#c77da0'
+cyan    = '#86b0a8'
+white   = '#e8d5d0'
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

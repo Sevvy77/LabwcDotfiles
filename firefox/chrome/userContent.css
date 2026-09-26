@@ -1,0 +1,36 @@
+/* Crimson Dark for Firefox's own pages. Web pages keep their own colours
+   (Dark Reader handles those). */
+
+@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+  :root, body, .activity-stream {
+    --newtab-background-color: #1f1416 !important;
+    --newtab-background-card: #2e1b1e !important;
+    --newtab-weather-background-color: #2e1b1e !important;
+    --newtab-element-secondary-color: #3a2226 !important;
+    --newtab-element-secondary-hover-color: #4a2a2f !important;
+    --newtab-button-static-background: #2e1b1e !important;
+    --newtab-button-static-hover-background: #3a2226 !important;
+    --newtab-button-static-active-background: #c0303a !important;
+    --newtab-primary-action-background-pocket: #c0303a !important;
+    --newtab-contextual-text-primary-color: #e8d5d0 !important;
+    --newtab-contextual-text-secondary-color: #9a7a7e !important;
+    --newtab-button-focus-border: #c0303a !important;
+    --newtab-background-color-secondary: #2e1b1e !important;
+    --newtab-text-primary-color: #e8d5d0 !important;
+    --newtab-text-secondary-color: #9a7a7e !important;
+    --newtab-primary-action-background: #c0303a !important;
+    --newtab-element-hover-color: #3a2226 !important;
+    --newtab-element-active-color: #c0303a !important;
+    --newtab-button-background: #2e1b1e !important;
+    --newtab-button-hover-background: #3a2226 !important;
+    --newtab-button-text: #e8d5d0 !important;
+    --newtab-border-color: #3a2226 !important;
+    --newtab-wordmark-color: #e8d5d0 !important;
+    --color-accent-primary: #c0303a !important;
+  }
+  body { background-color: #1f1416 !important; color: #e8d5d0 !important; }
+}
+
+@-moz-document url("about:blank") {
+  html, body { background-color: #1f1416 !important; }
+}

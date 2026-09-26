@@ -1,0 +1,53 @@
+# Crimson Dark: labwc window theme
+# Uses only keys documented in labwc-theme(5) for labwc 0.9.
+# Titlebar layout is labwc's default (icon:iconify,max,close).
+
+# Palette
+#   #140c0d bar/tooltip   #1a1012 chrome   #2e1b1e surface
+#   #7a5a5e muted text    #f5e9e6 bright text
+#   #c0303a crimson       #e5484d hot red  #e0a867 amber
+
+# Frame
+border.width: 2
+window.active.border.color: #c0303a
+window.inactive.border.color: #2e1b1e
+window.active.title.bg.color: #1a1012
+window.inactive.title.bg.color: #1a1012
+
+# Title text
+window.label.text.justify: left
+window.active.label.text.color: #f5e9e6
+window.inactive.label.text.color: #7a5a5e
+
+# Buttons: one colour per function when focused, all dimmed when not
+window.active.button.unpressed.image.color: #f5e9e6
+window.active.button.iconify.unpressed.image.color: #e0a867
+window.active.button.max.unpressed.image.color: #c0303a
+window.active.button.close.unpressed.image.color: #e5484d
+window.inactive.button.unpressed.image.color: #2e1b1e
+window.button.hover.bg.color: #e5484d33
+
+# Root and window menus
+menu.border.width: 8
+menu.border.color: #1a1012
+menu.overlap.x: -13
+menu.overlap.y: 8
+menu.title.bg.color: #2e1b1e
+menu.title.text.color: #e5484d
+menu.title.text.justify: center
+menu.items.bg.color: #1a1012
+menu.items.text.color: #f5e9e6
+menu.items.active.bg.color: #c0303a
+menu.items.active.text.color: #f5e9e6
+menu.separator.width: 1
+menu.separator.padding.width: 0
+menu.separator.padding.height: 2
+menu.separator.color: #2e1b1e
+
+# Alt-tab window switcher
+osd.bg.color: #1a1012
+osd.border.color: #2e1b1e
+osd.border.width: 6
+osd.label.text.color: #f5e9e6
+osd.window-switcher.style-classic.item.active.border.color: #c0303a
+osd.window-switcher.style-classic.item.active.bg.color: #c0303a40

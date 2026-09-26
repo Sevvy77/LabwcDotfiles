@@ -1,0 +1,5 @@
+alacritty &
+firefox &
+sfwbar &
+wlr-randr --output eDP-1 --scale 1.4
+swaybg -i ~/Pictures/wallpaper.png -m fill &

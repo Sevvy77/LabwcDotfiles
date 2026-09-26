@@ -1,0 +1,177 @@
+/* Crimson Dark for the Firefox UI (tabs, toolbars, URL bar, menus, panels).
+   Works on top of any Firefox theme; needs
+   toolkit.legacyUserProfileCustomizations.stylesheets = true (see user.js). */
+
+:root, :root[lwtheme], :root:-moz-lwtheme,
+/* Firefox also applies theme colours on the toolbox and toolbars themselves */
+#navigator-toolbox, #navigator-toolbox toolbar, #TabsToolbar, #nav-bar, #PersonalToolbar {
+  /* frame / tab strip */
+  --lwt-accent-color: #140c0d !important;
+  --lwt-accent-color-inactive: #140c0d !important;
+  --lwt-text-color: #e8d5d0 !important;
+  --lwt-header-image: none !important;
+  --lwt-additional-images: none !important;
+  --lwt-tab-line-color: #c0303a !important;
+  --lwt-toolbarbutton-icon-fill: #e8d5d0 !important;
+  --toolbox-bgcolor: #140c0d !important;
+  --toolbox-bgcolor-inactive: #140c0d !important;
+  --toolbox-textcolor: #e8d5d0 !important;
+  --toolbox-textcolor-inactive: #9a7a7e !important;
+
+  /* tabs */
+  --tab-selected-bgcolor: #2e1b1e !important;
+  --tab-selected-textcolor: #f5e9e6 !important;
+  --tab-hover-background-color: rgba(229, 72, 77, 0.15) !important;
+  --tab-selected-outline-color: #c0303a !important;
+  --tab-line-color: #c0303a !important;
+  --lwt-tab-text: #f5e9e6 !important;
+  --lwt-selected-tab-background-color: #2e1b1e !important;
+  --tab-loading-fill: #e5484d !important;
+
+  /* toolbars and buttons */
+  --toolbar-bgcolor: #1a1012 !important;
+  --toolbar-color: #e8d5d0 !important;
+  --toolbarbutton-icon-fill: #e8d5d0 !important;
+  --toolbarbutton-hover-background: rgba(229, 72, 77, 0.2) !important;
+  --toolbarbutton-active-background: rgba(229, 72, 77, 0.35) !important;
+  --toolbarseparator-color: #2e1b1e !important;
+  --chrome-content-separator-color: #2e1b1e !important;
+
+  /* URL / search field */
+  --toolbar-field-background-color: #1f1416 !important;
+  --toolbar-field-color: #e8d5d0 !important;
+  --toolbar-field-border-color: #3a2226 !important;
+  --toolbar-field-focus-background-color: #1f1416 !important;
+  --toolbar-field-focus-color: #f5e9e6 !important;
+  --toolbar-field-focus-border-color: #c0303a !important;
+  --urlbar-box-bgcolor: #2e1b1e !important;
+  --urlbar-box-hover-bgcolor: #3a2226 !important;
+  --urlbar-box-active-bgcolor: #c0303a !important;
+  --urlbarView-highlight-background: #c0303a !important;
+  --urlbarView-highlight-color: #f5e9e6 !important;
+  --urlbarView-hover-background: rgba(229, 72, 77, 0.15) !important;
+  --urlbarView-separator-color: #2e1b1e !important;
+
+  /* menus, popups, panels */
+  --arrowpanel-background: #1f1416 !important;
+  --arrowpanel-color: #e8d5d0 !important;
+  --arrowpanel-border-color: #3a2226 !important;
+  --arrowpanel-dimmed: rgba(229, 72, 77, 0.12) !important;
+  --arrowpanel-dimmed-further: rgba(229, 72, 77, 0.22) !important;
+  --panel-separator-color: #2e1b1e !important;
+  --menu-background-color: #1f1416 !important;
+  --menu-color: #e8d5d0 !important;
+  --menu-border-color: #3a2226 !important;
+  --menuitem-hover-background-color: #c0303a !important;
+  --menuitem-hover-color: #f5e9e6 !important;
+  --menu-disabled-color: #7a5a5e !important;
+
+  /* sidebar */
+  --sidebar-background-color: #140c0d !important;
+  --sidebar-text-color: #e8d5d0 !important;
+  --sidebar-border-color: #2e1b1e !important;
+  --sidebar-highlight-background-color: #c0303a !important;
+  --sidebar-highlight-text-color: #f5e9e6 !important;
+
+  /* accents, focus, buttons */
+  --focus-outline-color: #c0303a !important;
+  --color-accent-primary: #c0303a !important;
+  --color-accent-primary-hover: #e5484d !important;
+  --color-accent-primary-active: #ff7a7f !important;
+  --button-primary-bgcolor: #c0303a !important;
+  --button-primary-hover-bgcolor: #e5484d !important;
+  --button-primary-active-bgcolor: #ff7a7f !important;
+  --button-primary-color: #f5e9e6 !important;
+  --attention-dot-color: #e5484d !important;
+  --tab-attention-icon-color: #e5484d !important;
+
+  /* page background before content paints */
+  --tabpanel-background-color: #1f1416 !important;
+}
+
+#navigator-toolbox {
+  background-color: #140c0d !important;
+  background-image: none !important;
+  border-bottom-color: #2e1b1e !important;
+}
+
+/* Selected tab: surface colour with a crimson top line. */
+.tabbrowser-tab .tab-background:is([selected], [multiselected]) {
+  background-color: #2e1b1e !important;
+  background-image: none !important;
+  box-shadow: inset 0 2px 0 #c0303a !important;
+}
+
+/* Native context menus */
+menupopup, panel {
+  --panel-background: #1f1416 !important;
+  --panel-color: #e8d5d0 !important;
+  --panel-border-color: #3a2226 !important;
+}
+menupopup menuitem[_moz-menuactive], menupopup menu[_moz-menuactive] {
+  background-color: #c0303a !important;
+  color: #f5e9e6 !important;
+}
+
+::selection { background-color: #c0303a; color: #f5e9e6; }
+
+/* Direct element rules for colours some themes apply without the variables
+   above (Biscuit's orange tab text/outline, icon tint, teal focus ring). */
+.tabbrowser-tab .tab-label,
+.tabbrowser-tab:is([selected], [multiselected]) .tab-label { color: #e8d5d0 !important; }
+.tabbrowser-tab:is([selected], [multiselected]) .tab-label { color: #f5e9e6 !important; }
+.tabbrowser-tab .tab-background { outline-color: transparent !important; }
+.tabbrowser-tab:is([selected], [multiselected]) .tab-background {
+  outline: 1px solid #3a2226 !important;
+  outline-offset: -1px !important;
+}
+.tab-throbber, .tab-icon-overlay, .tab-close-button { fill: #e8d5d0 !important; color: #e8d5d0 !important; }
+
+#navigator-toolbox toolbarbutton,
+#navigator-toolbox .toolbarbutton-text,
+#navigator-toolbox .bookmark-item,
+#navigator-toolbox .bookmark-item > .toolbarbutton-text {
+  color: #e8d5d0 !important;
+  fill: #e8d5d0 !important;
+}
+#navigator-toolbox .toolbarbutton-icon,
+#navigator-toolbox .toolbarbutton-badge-stack,
+#navigator-toolbox .bookmark-item > .toolbarbutton-icon {
+  fill: #e8d5d0 !important;
+}
+
+#urlbar, #searchbar {
+  --focus-outline-color: #c0303a !important;
+  --toolbar-field-focus-border-color: #c0303a !important;
+}
+#urlbar:is([focused], [open]) > .urlbar-background,
+#urlbar:focus-within > .urlbar-background,
+#searchbar:focus-within {
+  outline-color: #c0303a !important;
+  border-color: #c0303a !important;
+  background-color: #1f1416 !important;
+}
+#urlbar-input, #urlbar .urlbar-input, #searchbar .searchbar-textbox { color: #e8d5d0 !important; }
+
+/* Toolbars themselves. Some themes (e.g. Terracotta) colour the toolbar in a
+   way the --toolbar-bgcolor override above doesn't reach, so paint them
+   directly. */
+#nav-bar, #PersonalToolbar, #navigator-toolbox > toolbar:not(#TabsToolbar) {
+  background-color: #1a1012 !important;
+  background-image: none !important;
+  color: #e8d5d0 !important;
+  border-color: #2e1b1e !important;
+  box-shadow: none !important;
+}
+#navigator-toolbox, #navigator-toolbox toolbar {
+  --tabs-navbar-separator-color: #2e1b1e !important;
+  --toolbox-border-bottom-color: #2e1b1e !important;
+}
+#urlbar-background, #urlbar > .urlbar-background, #searchbar {
+  background-color: #1f1416 !important;
+  border-color: #3a2226 !important;
+}
+#sidebar-box, #sidebar-main, sidebar-main, #sidebar-header {
+  background-color: #140c0d !important;
+  color: #e8d5d0 !important;
+}

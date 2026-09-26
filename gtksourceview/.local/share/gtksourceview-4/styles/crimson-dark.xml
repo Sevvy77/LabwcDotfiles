@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Crimson Dark: GtkSourceView style scheme for Mousepad -->
+<style-scheme id="crimson-dark" name="Crimson Dark" version="1.0">
+  <description>Dark red scheme matching the Crimson Dark desktop palette</description>
+
+  <color name="bg"        value="#1f1416"/>
+  <color name="bg-dim"    value="#1a1012"/>
+  <color name="surface"   value="#2e1b1e"/>
+  <color name="selection" value="#3a2226"/>
+  <color name="fg"        value="#e8d5d0"/>
+  <color name="fg-bright" value="#f5e9e6"/>
+  <color name="muted"     value="#7a5a5e"/>
+  <color name="crimson"   value="#c0303a"/>
+  <color name="red"       value="#e5484d"/>
+  <color name="red-light" value="#ff7a7f"/>
+  <color name="amber"     value="#e0a867"/>
+  <color name="rose"      value="#c77da0"/>
+  <color name="olive"     value="#a3b07a"/>
+  <color name="sage"      value="#86b0a8"/>
+
+  <!-- editor chrome -->
+  <style name="text"                 foreground="fg" background="bg"/>
+  <style name="selection"            foreground="fg-bright" background="crimson"/>
+  <style name="selection-unfocused"  foreground="fg" background="selection"/>
+  <style name="cursor"               foreground="red"/>
+  <style name="secondary-cursor"     foreground="muted"/>
+  <style name="current-line"         background="surface"/>
+  <style name="line-numbers"         foreground="muted" background="bg-dim"/>
+  <style name="current-line-number"  foreground="red" background="surface"/>
+  <style name="right-margin"         foreground="crimson" background="bg-dim"/>
+  <style name="bracket-match"        foreground="fg-bright" background="crimson" bold="true"/>
+  <style name="bracket-mismatch"     foreground="fg-bright" background="selection" underline="error"/>
+  <style name="search-match"         foreground="bg" background="amber"/>
+  <style name="draw-spaces"          foreground="selection"/>
+  <style name="background-pattern"   background="bg-dim"/>
+
+  <!-- syntax -->
+  <style name="def:comment"          foreground="muted" italic="true"/>
+  <style name="def:shebang"          foreground="muted" bold="true"/>
+  <style name="def:doc-comment-element" foreground="muted" bold="true"/>
+  <style name="def:keyword"          foreground="red" bold="true"/>
+  <style name="def:builtin"          foreground="red-light"/>
+  <style name="def:type"             foreground="rose"/>
+  <style name="def:function"         foreground="amber"/>
+  <style name="def:identifier"       foreground="fg"/>
+  <style name="def:string"           foreground="olive"/>
+  <style name="def:special-char"     foreground="sage"/>
+  <style name="def:constant"         foreground="red-light"/>
+  <style name="def:number"           foreground="amber"/>
+  <style name="def:preprocessor"     foreground="rose"/>
+  <style name="def:statement"        foreground="red"/>
+  <style name="def:operator"         foreground="fg-bright"/>
+  <style name="def:heading"          foreground="red" bold="true"/>
+  <style name="def:emphasis"         italic="true"/>
+  <style name="def:strong-emphasis"  bold="true"/>
+  <style name="def:link-text"        foreground="red-light" underline="single"/>
+  <style name="def:inline-code"      foreground="olive"/>
+  <style name="def:error"            foreground="fg-bright" background="crimson"/>
+  <style name="def:warning"          foreground="bg" background="amber"/>
+  <style name="def:note"             foreground="bg" background="rose"/>
+  <style name="diff:added-line"      foreground="olive"/>
+  <style name="diff:removed-line"    foreground="red"/>
+  <style name="diff:changed-line"    foreground="amber"/>
+</style-scheme>
