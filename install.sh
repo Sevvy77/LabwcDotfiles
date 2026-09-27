@@ -12,6 +12,7 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (stow packages and/or the
 #                                  # extras: galculator mousepad firefox)
+#        ./install.sh --verbose    # also show every file stow links
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -28,7 +29,14 @@ render_spotify() {
 stow_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk4 gtksourceview dbus)
 extras_all=(galculator mousepad firefox)
 
-targets=("$@")
+verbose=0
+targets=()
+for a in "$@"; do
+  case $a in
+    -v|--verbose) verbose=1 ;;
+    *)            targets+=("$a") ;;
+  esac
+done
 if [ ${#targets[@]} -eq 0 ]; then
   targets=("${stow_all[@]}" "${extras_all[@]}")
 fi
@@ -36,6 +44,7 @@ fi
 stow_pkgs=()
 extras=()
 skipped=()
+relinked_spotify=0
 for t in "${targets[@]}"; do
   case " ${extras_all[*]} " in
     *" $t "*) extras+=("$t") ;;
@@ -52,10 +61,12 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   # copy (see below). Remove it if it's still exactly that, with either
   # Chromium command, so stow can re-link; a hand-edited copy is left alone
   # and stow reports the conflict.
-  if [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ]; then
+  if [[ " ${stow_pkgs[*]} " == *" applications "* ]] &&
+     [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ]; then
     for c in "${chromium_cmds[@]}"; do
       if [ "$(render_spotify "$c")" = "$(<"$spotify_dst")" ]; then
         rm "$spotify_dst"
+        relinked_spotify=1
         break
       fi
     done
@@ -69,29 +80,50 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   # One package at a time: stow aborts every package in a call if any one of
   # them conflicts, and on an existing account something (usually .bashrc)
   # almost always does.
+  echo "Linking config files into $HOME:"
   for pkg in "${stow_pkgs[@]}"; do
-    stow -v --no-folding -t "$HOME" "$pkg" || skipped+=("$pkg")
+    if out=$(stow -v --no-folding -t "$HOME" "$pkg" 2>&1); then
+      n=$(grep -c '^LINK:' <<< "$out" || true)
+      # Re-linking the launcher removed above isn't news on a re-run.
+      [ "$pkg" = applications ] && [ $relinked_spotify -eq 1 ] && n=$((n - 1))
+      if [ "$n" -eq 0 ]; then status="already linked"
+      elif [ "$n" -eq 1 ]; then status="linked (1 file)"
+      else status="linked ($n files)"; fi
+    else
+      skipped+=("$pkg")
+      # The files in the way. Stow 2.4 says "... over existing target X since
+      # ...", 2.3 says "existing target is ...: X".
+      conflicts=$(sed -n -e 's/.* over existing target \(.*\) since .*/~\/\1/p' \
+                         -e 's/.*existing target is [^:]*: \(.*\)/~\/\1/p' <<< "$out" | xargs)
+      if [ -n "$conflicts" ]; then status="skipped: $conflicts already exists"
+      else status="skipped: $(grep -v '^$' <<< "$out" | tail -1)"; fi
+    fi
+    printf '  %-14s %s\n' "$pkg" "$status"
+    [ $verbose -eq 1 ] && [ -n "$out" ] && sed 's/^/      /' <<< "$out"
   done
 fi
 
 # Replace the stowed spotify-web.desktop symlink with a generated copy, so
-# the repo keeps its placeholders.
-if [ -L "$spotify_dst" ]; then
+# the repo keeps its placeholders. Also regenerate it if it was removed above
+# but applications was then skipped for a conflict.
+if [ -L "$spotify_dst" ] || [ $relinked_spotify -eq 1 ]; then
   chromium=""
   for c in "${chromium_cmds[@]}"; do
     command -v "$c" >/dev/null && { chromium=$c; break; }
   done
   if [ -z "$chromium" ]; then
     chromium=chromium
-    echo "spotify: Chromium not found; using 'chromium'. Re-run after installing it." >&2
+    echo "  (Spotify launcher: Chromium not found, so it uses 'chromium'. Re-run after installing it.)"
   fi
-  rm "$spotify_dst"
+  rm -f "$spotify_dst"
   render_spotify "$chromium" > "$spotify_dst"
 fi
+[ ${#stow_pkgs[@]} -gt 0 ] && echo
 
 install_galculator() {
   local conf="$HOME/.config/galculator/galculator.conf"
-  if pgrep -x galculator >/dev/null; then
+  # /proc rather than pgrep, which minimal Debian and Ubuntu don't have.
+  if grep -qsx galculator /proc/[0-9]*/comm; then
     echo "galculator: close it first (it overwrites its config on exit); skipped." >&2
     return
   fi
@@ -160,9 +192,13 @@ install_firefox() {
   echo "firefox: installed into $p (restart Firefox to apply)."
 }
 
-for e in "${extras[@]}"; do
-  "install_$e"
-done
+if [ ${#extras[@]} -gt 0 ]; then
+  echo "Theme settings that can't be linked:"
+  for e in "${extras[@]}"; do
+    "install_$e" 2>&1 | sed 's/^/  /'
+  done
+  echo
+fi
 
 mkdir -p "$HOME/Pictures"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
@@ -171,8 +207,7 @@ busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
   org.freedesktop.DBus ReloadConfig >/dev/null 2>&1 || true
 
 cat <<EOF
-
-Installed. Still needed:
+Still needed:
   - A wallpaper at ~/Pictures/wallpaper.png (or edit the path in
     labwc/.config/labwc/autostart and rc.xml).
   - Start labwc on login (see SPEC.md section 2) if not already configured.
@@ -182,12 +217,13 @@ Installed. Still needed:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
 EOF
 
+echo
 if [ ${#skipped[@]} -gt 0 ]; then
-  cat >&2 <<EOF2
-
-Skipped because files already exist (see the stow conflicts above):
+  cat <<EOF
+Done, but $([ ${#skipped[@]} -eq 1 ] && echo "1 package was" || echo "${#skipped[@]} packages were") skipped because files already exist:
   ${skipped[*]}
-Move or merge those files, then run: ./install.sh ${skipped[*]}
-EOF2
+Move or merge those files (listed above), then run: ./install.sh ${skipped[*]}
+EOF
   exit 1
 fi
+echo "Done."

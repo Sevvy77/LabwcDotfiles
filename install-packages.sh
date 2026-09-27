@@ -75,37 +75,66 @@ available() {
 repo_pkgs=()
 aur_pkgs=()
 missing=()
+report=()   # one "status|what|name" line per package, printed after checking
 
-while IFS='|' read -r -a row; do
-  [ ${#row[@]} -ge 4 ] || continue
+rows=()
+while IFS= read -r line; do
+  [[ $line == *'|'* ]] && rows+=("$line")
+done <<< "$packages"
+
+# On a terminal, show a single progress line that updates in place; in a log
+# or pipe, just say what's happening.
+tty=0; [ -t 1 ] && tty=1
+echo "Package manager: $pm${aur_helper:+ (AUR via $aur_helper)}"
+echo "Checking ${#rows[@]} package names (the first check can be slow while"
+echo "the package lists are loaded)..."
+
+i=0
+for line in "${rows[@]}"; do
+  i=$((i + 1))
+  IFS='|' read -r -a row <<< "$line"
   what=$(echo "${row[0]}" | xargs)
   names=$(echo "${row[$((col - 1))]}" | xargs)
   [ "$names" = "-" ] && continue
+  [ $tty -eq 1 ] && printf '\r\033[K  %d/%d  %s' "$i" "${#rows[@]}" "${names%%/*}"
   found=""
   IFS=/ read -r -a candidates <<< "$names"
   for name in "${candidates[@]}"; do
-    if available "$name"; then found=$name; repo_pkgs+=("$name"); break; fi
+    if available "$name"; then found=$name; repo_pkgs+=("$name"); report+=("ok|$what|$name"); break; fi
   done
   if [ -z "$found" ] && [ -n "$aur_helper" ]; then
     for name in "${candidates[@]}"; do
-      if "$aur_helper" -Si "$name" >/dev/null 2>&1; then found=$name; aur_pkgs+=("$name"); break; fi
+      if "$aur_helper" -Si "$name" >/dev/null 2>&1; then found=$name; aur_pkgs+=("$name"); report+=("AUR|$what|$name"); break; fi
     done
   fi
-  [ -n "$found" ] || missing+=("$what ($names)")
-done <<< "$packages"
+  if [ -z "$found" ]; then
+    missing+=("$what ($names)")
+    report+=("--|$what|$names (not found)")
+  fi
+done
+[ $tty -eq 1 ] && printf '\r\033[K'
 
-echo "Package manager: $pm${aur_helper:+ (AUR via $aur_helper)}"
-echo "From the repos: ${repo_pkgs[*]:-none}"
-[ ${#aur_pkgs[@]} -gt 0 ] && echo "From the AUR:   ${aur_pkgs[*]}"
+echo
+for r in "${report[@]}"; do
+  IFS='|' read -r status what name <<< "$r"
+  printf '  %-4s %-20s %s\n' "$status" "$what" "$name"
+done
+echo
+summary="${#repo_pkgs[@]} from the repos"
+[ ${#aur_pkgs[@]} -gt 0 ] && summary+=", ${#aur_pkgs[@]} from the AUR"
+[ ${#missing[@]} -gt 0 ] && summary+=", ${#missing[@]} not found"
+echo "$summary."
 if [ ${#missing[@]} -gt 0 ]; then
-  echo "Not found, install these yourself:"
-  printf '  - %s\n' "${missing[@]}"
+  echo "Install the ones marked -- yourself."
   if [ "$pm" = pacman ] && [ -z "$aur_helper" ]; then
-    echo "  (Arch: some of these are in the AUR; install yay or paru and re-run.)"
+    echo "(Arch: some of these are in the AUR; install yay or paru and re-run.)"
   fi
 fi
 
-[ $dry_run -eq 1 ] && { echo "(dry run: nothing installed)"; exit 0; }
+[ $dry_run -eq 1 ] && { echo "Dry run: nothing installed."; exit 0; }
+
+echo
+echo "Installing (${pm} will ask to confirm)..."
 
 if [ ${#repo_pkgs[@]} -gt 0 ]; then
   case $pm in
