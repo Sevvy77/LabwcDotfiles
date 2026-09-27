@@ -89,6 +89,8 @@ You still need to:
 
 ## License
 
+GPL-3.0; see [`LICENSE`](LICENSE).
+
 Started from [antomfdez/LabwcDots](https://github.com/antomfdez/LabwcDots)
 (GPL-3.0). The bar config and window theme have since been rewritten from
 scratch; the alacritty config keeps its general shape.
