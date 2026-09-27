@@ -35,6 +35,7 @@ fi
 
 stow_pkgs=()
 extras=()
+skipped=()
 for t in "${targets[@]}"; do
   case " ${extras_all[*]} " in
     *" $t "*) extras+=("$t") ;;
@@ -53,7 +54,7 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   # and stow reports the conflict.
   if [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ]; then
     for c in "${chromium_cmds[@]}"; do
-      if render_spotify "$c" | cmp -s - "$spotify_dst"; then
+      if [ "$(render_spotify "$c")" = "$(<"$spotify_dst")" ]; then
         rm "$spotify_dst"
         break
       fi
@@ -64,7 +65,13 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   # folding, a missing ~/.local/share/applications would become a symlink to
   # the repo, and anything written there later (desktop database caches, the
   # spotify-web fix-up below) would land inside the repo.
-  stow -v --no-folding -t "$HOME" "${stow_pkgs[@]}"
+  #
+  # One package at a time: stow aborts every package in a call if any one of
+  # them conflicts, and on an existing account something (usually .bashrc)
+  # almost always does.
+  for pkg in "${stow_pkgs[@]}"; do
+    stow -v --no-folding -t "$HOME" "$pkg" || skipped+=("$pkg")
+  done
 fi
 
 # Replace the stowed spotify-web.desktop symlink with a generated copy, so
@@ -120,7 +127,9 @@ install_mousepad() {
 
 install_firefox() {
   local base="" dir ini profile=""
-  for dir in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+  # The last one is Ubuntu's Firefox snap.
+  for dir in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox" \
+             "$HOME/snap/firefox/common/.mozilla/firefox"; do
     [ -f "$dir/profiles.ini" ] && { base="$dir"; break; }
   done
   if [ -z "$base" ]; then
@@ -172,3 +181,13 @@ Installed. Still needed:
   - After a GTK4 upgrade, regenerate the Volume Control theme:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
 EOF
+
+if [ ${#skipped[@]} -gt 0 ]; then
+  cat >&2 <<EOF2
+
+Skipped because files already exist (see the stow conflicts above):
+  ${skipped[*]}
+Move or merge those files, then run: ./install.sh ${skipped[*]}
+EOF2
+  exit 1
+fi

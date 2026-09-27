@@ -61,10 +61,15 @@ a subset, e.g. `./install.sh alacritty bash firefox`.
 It is safe to re-run. Stow runs with `--no-folding`, so only individual files
 are symlinked and nothing written into `~/.config/...` or `~/.local/share/...`
 later ends up inside this repo. Existing regular files in `$HOME` are never
-overwritten; Stow stops with a conflict instead (move or delete them first).
+overwritten. Any package that would replace one (on an existing account,
+usually `bash` because of your own `.bashrc`) is skipped, the rest are
+installed, and the script lists what it skipped at the end. Move or merge
+those files, then re-run with just those package names.
 
 Firefox needs a profile to exist first (start and quit it once), and a
-restart to pick up the stylesheets. galculator must be closed while its
+restart to pick up the stylesheets. Ubuntu's snap Firefox is supported, but
+it can't read hidden directories in `$HOME`, so clone this repo somewhere
+like `~/dotfiles`, not `~/.dotfiles`. galculator must be closed while its
 colours are written.
 
 You still need to:
