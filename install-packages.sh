@@ -86,7 +86,9 @@ wallpaper          | swaybg                   | swaybg             | swaybg
 lock screen        | swaylock                 | swaylock           | swaylock
 screenshots        | grim                     | grim               | grim
 screenshot region  | slurp                    | slurp              | slurp
+screenshot to clip | wl-clipboard             | wl-clipboard       | wl-clipboard
 display scaling    | wlr-randr                | wlr-randr          | wlr-randr
+display settings   | wdisplays                | wdisplays          | wdisplays
 brightness keys    | brightnessctl            | brightnessctl      | brightnessctl
 X11 app support    | xorg-x11-server-Xwayland | xorg-xwayland      | xwayland
 session bus        | -                        | -                  | dbus-user-session

@@ -77,13 +77,25 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 
 | Keys | Action |
 |---|---|
-| `W-k` | `fuzzel` (app launcher) |
-| `W-l` | `swaylock -i ~/Pictures/wallpaper.png --scaling fill` (lock, wallpaper as background; plain `#1f1416` if there's no wallpaper) |
-| `W-q` | Close focused window |
-| `W-p` | Region screenshot: `grim -g "$(slurp)" ~/Pictures/screenshot-YYYYmmdd-HHMMSS.png` |
-| `C-A-BackSpace` | Exit labwc |
+| `W-f` | `firefox` |
+| `W-Return` | `alacritty` (terminal) |
+| `XF86Calculator` | `galculator` |
 | `XF86MonBrightnessUp` | `brightnessctl set +5%` |
 | `XF86MonBrightnessDown` | `brightnessctl set 5%-` |
+| `W-q` | Close focused window |
+| `W-s` | `slack` (not installed by `install-packages.sh`) |
+| `W-l` | `swaylock -i ~/Pictures/wallpaper.png` (lock, wallpaper as background; plain grey `#a3a3a3`, swaylock's default, if there's no wallpaper) |
+| `W-g` | `google-chrome` (not installed by `install-packages.sh`) |
+| `W-t` | `nautilus` (Files) |
+| `W-n` | `wdisplays` (display settings) |
+| `W-m` | Toggle maximize |
+| `W-c` | `gnome-clocks` |
+| `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
+| `W-k` | `fuzzel` (app launcher) |
+| `C-A-BackSpace` | Exit labwc |
+
+All but the brightness keys, `W-q` and `C-A-BackSpace` fire on key release
+(`onRelease="yes"`).
 
 Window theme is set with `<theme><name>OB-Crimson-Dark</name></theme>`.
 
@@ -1008,8 +1020,8 @@ Fedora Asahi packages: firmware, filesystems, network, kernel, etc.; install via
 the Asahi Remix image, not from this list.)
 
 ```
-labwc sfwbar fuzzel alacritty swaybg swaylock grim slurp wlr-randr brightnessctl
-xorg-x11-server-Xwayland
+labwc sfwbar fuzzel alacritty swaybg swaylock grim slurp wl-clipboard wlr-randr wdisplays
+brightnessctl xorg-x11-server-Xwayland
 firefox chromium nautilus mousepad galculator pavucontrol blueman libreoffice vlc gnome-clocks
 jetbrains-mono-fonts-all fastfetch mako stow
 ```
@@ -1051,6 +1063,8 @@ Flatpak is not in use; no Flatpaks are installed.
 
 1. ~~Screenshot binding is broken.~~ Fixed 2026-09-25: `~/Pictures` exists and
    each capture gets a timestamped name.
+   Since 2026-09-27 `W-p` copies the region to the clipboard instead of
+   saving a file (needs `wl-clipboard`).
 2. ~~`vivaldi` launcher is dead.~~ Removed from the bar 2026-09-25.
 3. ~~`mpd-intmod` widget is dead.~~ Removed from the bar 2026-09-25.
 4. ~~Icon theme `WhiteSur-dark` is not installed.~~ The `IconTheme` line was
@@ -1137,4 +1151,4 @@ pre-switch files were backed up locally.
    `./install.sh`, which does steps 4–5).
 6. Start `labwc`; confirm: bar appears, `W-k` opens fuzzel, Bluetooth Devices
    opens dark; Files, Mousepad, galculator, Clocks, Volume Control and Firefox
-   open crimson; LibreOffice opens stock; `W-p` writes a screenshot.
+   open crimson; LibreOffice opens stock; `W-p` copies a region screenshot to the clipboard.

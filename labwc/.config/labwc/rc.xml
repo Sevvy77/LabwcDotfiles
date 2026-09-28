@@ -1,30 +1,66 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" ?>
 <labwc_config>
-  <theme>
-    <name>OB-Crimson-Dark</name>
-  </theme>
   <keyboard>
     <default />
-    <keybind key="W-k">
-      <action name="Execute" command="fuzzel" />
+    <!-- The W- prefix refers to the Super key -->
+    <keybind key="W-f" onRelease="yes">
+      <action name="Execute" command="firefox" />
     </keybind>
-    <keybind key="W-l">
-      <action name="Execute" command="sh -c 'if [ -f ~/Pictures/wallpaper.png ]; then exec swaylock -i ~/Pictures/wallpaper.png --scaling fill; else exec swaylock -c 1f1416; fi'"/>
+    <keybind key="W-Return" onRelease="yes">
+      <action name="Execute" command="alacritty" />
+    </keybind>
+    <keybind key="XF86Calculator" onRelease="yes">
+      <action name="Execute">
+        <command>galculator</command>
+      </action>
+    </keybind>
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute">
+        <command>brightnessctl set +5%</command>
+      </action>
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute">
+        <command>brightnessctl set 5%-</command>
+      </action>
     </keybind>
     <keybind key="W-q">
       <action name="Close" />
     </keybind>
-    <keybind key="W-p">
-      <action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png'" />
+    <keybind key="W-s" onRelease="yes">
+      <action name="Execute" command="slack" />
+    </keybind>
+    <keybind key="W-l" onRelease="yes">
+      <action name="Execute" command="swaylock -i ~/Pictures/wallpaper.png" />
+    </keybind>
+    <keybind key="W-g" onRelease="yes">
+      <action name="Execute" command="google-chrome" />
+    </keybind>
+    <keybind key="W-t" onRelease="yes">
+      <action name="Execute" command="nautilus" />
+    </keybind>
+    <keybind key="W-n" onRelease="yes">
+      <action name="Execute" command="wdisplays" />
+    </keybind>
+    <keybind key="W-m" onRelease="yes">
+      <action name="ToggleMaximize" />
+    </keybind>
+    <keybind key="W-c" onRelease="yes">
+      <action name="Execute" command="gnome-clocks" />
+    </keybind>
+    <keybind key="W-p" onRelease="yes">
+      <action name="Execute">
+        <command>sh -c 'grim -g "$(slurp)" - | wl-copy'</command>
+      </action>
+    </keybind>
+    <keybind key="W-k" onRelease="yes">
+      <action name="Execute" command="fuzzel" />
     </keybind>
     <keybind key="C-A-BackSpace">
       <action name="Exit" />
     </keybind>
-    <keybind key="XF86MonBrightnessUp">
-      <action name="Execute" command="brightnessctl set +5%" />
-    </keybind>
-    <keybind key="XF86MonBrightnessDown">
-      <action name="Execute" command="brightnessctl set 5%-" />
-    </keybind>
   </keyboard>
+  <theme>
+    <name>OB-Crimson-Dark</name>
+  </theme>
 </labwc_config>
