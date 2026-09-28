@@ -1,5 +1,28 @@
-alacritty &
-firefox &
+# Run by labwc (with sh) when it starts, whether from a TTY or a display
+# manager such as GDM.
+
+# Per-machine settings, such as display scaling, go in autostart.local next
+# to this file. It isn't part of the repo. Example:
+#   wlr-randr --output eDP-1 --scale 1.4
+[ -f ~/.config/labwc/autostart.local ] && . ~/.config/labwc/autostart.local
+
+# Wallpaper: ~/Pictures/wallpaper.png if there is one, else the theme colour.
+if [ -f ~/Pictures/wallpaper.png ]; then
+  swaybg -i ~/Pictures/wallpaper.png -m fill &
+else
+  swaybg -c '#1f1416' &
+fi
+
+# Password prompts for apps that need admin rights (blueman, mounting drives
+# in Nautilus). The agent lives in a different place on each distro.
+for agent in /usr/libexec/polkit-mate-authentication-agent-1 \
+             /usr/lib/mate-polkit/polkit-mate-authentication-agent-1; do
+  if [ -x "$agent" ]; then "$agent" & break; fi
+done
+
 sfwbar &
-wlr-randr --output eDP-1 --scale 1.4
-swaybg -i ~/Pictures/wallpaper.png -m fill &
+alacritty &
+# Debian's Firefox is firefox-esr.
+for browser in firefox firefox-esr; do
+  if command -v "$browser" >/dev/null; then "$browser" & break; fi
+done

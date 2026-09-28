@@ -39,6 +39,8 @@ This is *not* a GNOME session. GNOME apps (Nautilus, Clocks) run inside labwc.
    starts it; the compositor's parent process is the login shell.
    - *Rebuild option:* add to `~/.bash_profile`:
      `[ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ] && exec labwc`
+   - A display manager (GDM, SDDM) works too: the labwc package installs a
+     `labwc` session in `/usr/share/wayland-sessions/`.
 3. labwc reads `~/.config/labwc/{environment,autostart,rc.xml}`.
 
 ### 2.1 `labwc/environment`
@@ -50,20 +52,23 @@ GDK_BACKEND=wayland
 QT_QPA_PLATFORM=wayland
 ```
 
-### 2.2 `labwc/autostart` (run in order, all backgrounded except `wlr-randr`)
+### 2.2 `labwc/autostart`
 
-```
-alacritty &
-firefox &
-sfwbar &
-wlr-randr --output eDP-1 --scale 1.4
-swaybg -i ~/Pictures/wallpaper.png -m fill &
-```
+In order:
 
-Behaviour: a terminal, Firefox and the bar open at login; output scale is set
-to 1.4; wallpaper is `~/Pictures/wallpaper.png` (here a copy of the personal
-image, 1672x941), scaled with `fill`. **The wallpaper file is a
-personal asset and is not part of this spec or the repo**; substitute any image.
+1. Sources `~/.config/labwc/autostart.local` if it exists: per-machine
+   settings, not in the repo. **This machine's** contains
+   `wlr-randr --output eDP-1 --scale 1.4` (output scale 1.4).
+2. `swaybg -i ~/Pictures/wallpaper.png -m fill &` if that file exists,
+   otherwise `swaybg -c '#1f1416' &` (the theme's background colour). Here the
+   wallpaper is a copy of a personal image, 1672x941. **The wallpaper file is
+   a personal asset and is not part of this spec or the repo**; substitute
+   any image.
+3. The MATE polkit agent (password prompts for blueman, Nautilus mounts),
+   from `/usr/libexec/` or `/usr/lib/mate-polkit/` depending on the distro.
+4. `sfwbar &`, `alacritty &`, and `firefox &` (or `firefox-esr` on Debian).
+
+Behaviour: the bar, a terminal and Firefox open at login.
 
 ## 3. Keybindings (`labwc/rc.xml`)
 
@@ -73,7 +78,7 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 | Keys | Action |
 |---|---|
 | `W-k` | `fuzzel` (app launcher) |
-| `W-l` | `swaylock -i ~/Pictures/wallpaper.png --scaling fill` (lock, wallpaper as background) |
+| `W-l` | `swaylock -i ~/Pictures/wallpaper.png --scaling fill` (lock, wallpaper as background; plain `#1f1416` if there's no wallpaper) |
 | `W-q` | Close focused window |
 | `W-p` | Region screenshot: `grim -g "$(slurp)" ~/Pictures/screenshot-YYYYmmdd-HHMMSS.png` |
 | `C-A-BackSpace` | Exit labwc |
@@ -1013,14 +1018,31 @@ jetbrains-mono-fonts-all fastfetch mako stow
 `python3-gobject` only to regenerate the GTK4 theme (6.2).
 
 In the repo, `install-packages.sh` installs these on Fedora (dnf), Arch
-(pacman, plus `yay`/`paru` for AUR packages) or Debian/Ubuntu (apt). A table
-in the script gives each package's name per distro, with fallbacks such as
-`firefox/firefox-esr`; every name is checked with `dnf info`, `pacman -Si`
-(then the AUR helper) or `apt-cache show` before installing, and anything
-not found is listed rather than failing the run. Verified 2026-09-26: on this
-Fedora machine all 26 resolve; the Arch and Debian paths were exercised with
-stand-in package managers (AUR fallback, alternative names, not-found
-report), not on real Arch or Debian systems.
+(pacman) or Debian/Ubuntu (apt), from a minimal TTY-only install upwards. A
+table in the script gives each package's name per distro, with fallbacks
+such as `firefox/firefox-esr`; every name is checked with `dnf info`,
+`pacman -Si` or `apt-cache policy` (which must show an installable version)
+before installing, and anything not found is listed rather than failing the
+run. On top of the list above it installs what a minimal system lacks:
+graphics drivers (mesa), PipeWire + WirePlumber + the PulseAudio shim, bluez,
+the MATE polkit agent, DejaVu fonts, the Adwaita icon theme, Fedora's
+`labwc-session` (the display-manager entry; other distros ship it inside
+`labwc`) and Debian/Ubuntu's `dbus-user-session`. It then enables
+`bluetooth.service` and the PipeWire user units.
+
+`sfwbar`: packaged on Fedora and CachyOS; on Arch it comes from the AUR (via
+`yay`/`paru`, or `makepkg` directly); on Debian/Ubuntu it's built from the
+`v1.0_beta16.1` tag (this machine's version) into `/usr/local`, with all
+optional modules off (the config uses none).
+
+Verified 2026-09-27 in containers, from each distro's minimal image with a
+new user: Debian stable, Ubuntu 26.04, Fedora 44 and Arch Linux ARM ran the
+full install, `install.sh`, and a headless labwc session (bar, wallpaper,
+terminal, Firefox all started; screenshots checked). CachyOS (x86-64, under
+emulation) ran the full install as root; its session couldn't be started
+under emulation. Not covered by containers: logind (so the polkit agent
+exits there), systemd services, real GPUs, GDM itself, and Ubuntu's snap
+Firefox/Chromium.
 
 `mako` is installed but has no config and is not running (see 8).
 Flatpak is not in use; no Flatpaks are installed.
@@ -1106,7 +1128,8 @@ pre-switch files were backed up locally.
 
 1. Install Fedora Asahi Remix 44 (minimal), log in on tty1.
 2. Run `./install-packages.sh` (section 7).
-3. Create `~/Pictures`; place a wallpaper; fix paths in `autostart` and `rc.xml`.
+3. Optionally place a wallpaper at `~/Pictures/wallpaper.png`, and put the
+   `wlr-randr` scale line in `~/.config/labwc/autostart.local` (section 2.2).
 4. Install the configs from sections 2-5 (or `stow` the repo).
 5. Add the dark-mode launcher overrides (6.1, 6.2), the Crimson Dark app files
    and Mousepad `gsettings` (6.4), and the `labwc` launch line (section 2).

@@ -81,6 +81,15 @@ if [ ${#stow_pkgs[@]} -gt 0 ]; then
   # them conflicts, and on an existing account something (usually .bashrc)
   # almost always does.
   echo "Linking config files into $HOME:"
+  # A new account's ~/.bashrc is just the distro's stock copy from /etc/skel.
+  # Move it to ~/.bashrc.skel, which this repo's .bashrc sources, so bash can
+  # be linked. A .bashrc with changes of your own is left alone (skipped).
+  if [[ " ${stow_pkgs[*]} " == *" bash "* ]] && [ -f "$HOME/.bashrc" ] &&
+     [ ! -L "$HOME/.bashrc" ] && [ -f /etc/skel/.bashrc ] &&
+     [ "$(<"$HOME/.bashrc")" = "$(</etc/skel/.bashrc)" ]; then
+    mv "$HOME/.bashrc" "$HOME/.bashrc.skel"
+    echo "  (your ~/.bashrc was the distro's stock one; moved to ~/.bashrc.skel)"
+  fi
   for pkg in "${stow_pkgs[@]}"; do
     if out=$(stow -v --no-folding -t "$HOME" "$pkg" 2>&1); then
       n=$(grep -c '^LINK:' <<< "$out" || true)
@@ -150,8 +159,15 @@ EOF
 
 install_mousepad() {
   if gsettings writable org.xfce.mousepad.preferences.view color-scheme >/dev/null 2>&1; then
-    gsettings set org.xfce.mousepad.preferences.view color-scheme crimson-dark
-    echo "mousepad: colour scheme set to crimson-dark."
+    gsettings set org.xfce.mousepad.preferences.view color-scheme crimson-dark 2>/dev/null || true
+    # Saving needs a D-Bus session, which a TTY login right after installing
+    # dbus-user-session (Debian/Ubuntu) doesn't have yet.
+    if [ "$(gsettings get org.xfce.mousepad.preferences.view color-scheme 2>/dev/null)" = "'crimson-dark'" ]; then
+      echo "mousepad: colour scheme set to crimson-dark."
+    else
+      echo "mousepad: couldn't save the colour scheme (no D-Bus session yet?)." >&2
+      echo "          Log out and in again, then run: ./install.sh mousepad" >&2
+    fi
   else
     echo "mousepad: schema not found (is mousepad installed?); skipped." >&2
   fi
@@ -207,15 +223,22 @@ busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
   org.freedesktop.DBus ReloadConfig >/dev/null 2>&1 || true
 
 cat <<EOF
-Still needed:
-  - A wallpaper at ~/Pictures/wallpaper.png (or edit the path in
-    labwc/.config/labwc/autostart and rc.xml).
-  - Start labwc on login (see SPEC.md section 2) if not already configured.
-    If labwc is already running: labwc -r, and restart sfwbar.
-  - Install the software first with ./install-packages.sh, if you haven't.
+To start the desktop:
+  - From a TTY: log in and run labwc.
+  - From a display manager (GDM, SDDM...): log out and pick "labwc" as the
+    session.
+  - If labwc is already running: labwc -r, then restart sfwbar.
+
+Optional:
+  - A wallpaper at ~/Pictures/wallpaper.png (otherwise a plain background).
+  - Per-machine settings such as display scaling in
+    ~/.config/labwc/autostart.local, e.g.:
+      wlr-randr --output eDP-1 --scale 1.4
   - After a GTK4 upgrade, regenerate the Volume Control theme:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
 EOF
+command -v labwc >/dev/null ||
+  printf '\nlabwc isn'"'"'t installed yet: run ./install-packages.sh first.\n'
 
 echo
 if [ ${#skipped[@]} -gt 0 ]; then

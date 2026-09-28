@@ -2,7 +2,9 @@
 
 labwc + sfwbar + fuzzel + alacritty, themed **Crimson Dark** throughout (window
 chrome, terminal, launcher, bar, Firefox, Nautilus, Mousepad, galculator,
-Clocks, Volume Control), on Fedora Asahi Remix. LibreOffice is left stock.
+Clocks, Volume Control). Built on Fedora Asahi Remix; installs on Fedora,
+Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
+or alongside an existing desktop. LibreOffice is left stock.
 Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
 ## Layout
@@ -24,7 +26,7 @@ gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad 
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
 applications/.local/share/applications/*.desktop   # theme overrides + custom launchers
 bash/.bashrc
-install-packages.sh   # installs the software (dnf, pacman+AUR, or apt)
+install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt)
 install.sh
 ```
 
@@ -41,42 +43,70 @@ Mousepad's `crimson-dark` colour scheme (set with `gsettings`).
 ## Install
 
 ```sh
-./install-packages.sh   # the software: detects dnf, pacman or apt
+git clone https://github.com/Sevvy77/LabwcDotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install-packages.sh   # the software, as your normal user (uses sudo)
 ./install.sh            # the config files
+labwc                   # from a TTY; or pick "labwc" in GDM/SDDM
 ```
 
-`install-packages.sh` works on Fedora, Arch and Debian/Ubuntu. It has one
-table mapping each package to its name on each distro, checks every name
-against your package manager before installing, and lists anything it can't
-find instead of failing. On Arch, packages missing from the official repos
-(such as `sfwbar`) come from the AUR if `yay` or `paru` is installed. Run
-`./install-packages.sh --dry-run` to see what it would install.
+That works from a minimal install with nothing but a TTY. You need `git`
+to clone, and `sudo` for your user (or run `install-packages.sh` as root and
+`install.sh` as your user; the script explains how to set up sudo if it's
+missing).
 
-`install.sh` stows every package into `$HOME`, fills in the one `.desktop`
-file that needs an absolute path, applies the non-stowable theme pieces
-(`galculator`, `mousepad`, `firefox`), creates `~/Pictures`, refreshes the
-desktop database and reloads the D-Bus session config. Pass names to install
-a subset, e.g. `./install.sh alacritty bash firefox`.
+### install-packages.sh
+
+Works on Fedora, Arch and Debian/Ubuntu. It has one table mapping each
+package to its name on each distro, checks every name before installing,
+and lists anything it can't find instead of failing. Besides the desktop's
+own programs it installs what a minimal system lacks: graphics drivers,
+PipeWire audio, bluetooth, a polkit agent for password prompts, fonts and
+icons. It then enables bluetooth and the PipeWire user services.
+
+The bar, `sfwbar`, isn't packaged everywhere. On Arch it comes from the
+AUR: with `yay` or `paru` if you have one, otherwise the script builds it
+with `makepkg`. On Debian and Ubuntu it's built from source (the version
+this config was written for) and installed to `/usr/local`.
+
+Options: `--dry-run` shows what it would do, `--yes` doesn't ask to
+confirm, `--skip vlc,libreoffice` leaves packages out.
+
+On Ubuntu, Firefox and Chromium are snaps. Ubuntu's snap Firefox is
+supported, but it can't read hidden directories in `$HOME`, so clone this
+repo somewhere like `~/dotfiles`, not `~/.dotfiles`.
+
+### install.sh
+
+Stows every package into `$HOME`, fills in the one `.desktop` file that
+needs an absolute path, applies the non-stowable theme pieces (`galculator`,
+`mousepad`, `firefox`), creates `~/Pictures`, refreshes the desktop database
+and reloads the D-Bus session config. Pass names to install a subset, e.g.
+`./install.sh alacritty bash firefox`, and `--verbose` to see every file.
 
 It is safe to re-run. Stow runs with `--no-folding`, so only individual files
 are symlinked and nothing written into `~/.config/...` or `~/.local/share/...`
 later ends up inside this repo. Existing regular files in `$HOME` are never
-overwritten. Any package that would replace one (on an existing account,
-usually `bash` because of your own `.bashrc`) is skipped, the rest are
+overwritten. Any package that would replace one is skipped, the rest are
 installed, and the script lists what it skipped at the end. Move or merge
 those files, then re-run with just those package names.
 
-Firefox needs a profile to exist first (start and quit it once), and a
-restart to pick up the stylesheets. Ubuntu's snap Firefox is supported, but
-it can't read hidden directories in `$HOME`, so clone this repo somewhere
-like `~/dotfiles`, not `~/.dotfiles`. galculator must be closed while its
-colours are written.
+The one exception is a `~/.bashrc` that is still the distro's stock copy
+from `/etc/skel` (as on a new install): it's moved to `~/.bashrc.skel`,
+which this repo's `.bashrc` sources, so you keep your distro's defaults.
 
-You still need to:
-- Drop a wallpaper at `~/Pictures/wallpaper.png`.
-- Start `labwc` on login — see `SPEC.md` section 2 (no display manager is
-  configured here; login is on a tty and `labwc` is launched by hand or from
-  `.bash_profile`).
+Firefox needs a profile to exist first (start and quit it once, then run
+`./install.sh firefox`), and a restart to pick up the stylesheets. galculator
+must be closed while its colours are written.
+
+### Per-machine settings
+
+- Wallpaper: `~/Pictures/wallpaper.png` if it exists (desktop and lock
+  screen), otherwise the theme's background colour.
+- Display scaling and anything else specific to one machine: put it in
+  `~/.config/labwc/autostart.local`, which `autostart` runs and which isn't
+  part of this repo. For example:
+  `wlr-randr --output eDP-1 --scale 1.4`
 
 ## Known gaps (see SPEC.md section 8 for details)
 

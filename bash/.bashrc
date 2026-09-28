@@ -1,8 +1,11 @@
 # .bashrc
 
-# Source global definitions
+# Source global definitions: Fedora keeps them in /etc/bashrc. Elsewhere
+# install.sh moved the distro's stock ~/.bashrc to ~/.bashrc.skel.
 if [ -f /etc/bashrc ]; then
     . /etc/bashrc
+elif [ -f ~/.bashrc.skel ]; then
+    . ~/.bashrc.skel
 fi
 
 # User specific environment
