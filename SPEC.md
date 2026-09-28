@@ -1023,11 +1023,10 @@ the Asahi Remix image, not from this list.)
 labwc sfwbar fuzzel alacritty swaybg swaylock grim slurp wl-clipboard wlr-randr wdisplays
 brightnessctl xorg-x11-server-Xwayland
 firefox chromium nautilus mousepad galculator pavucontrol blueman libreoffice vlc gnome-clocks
-jetbrains-mono-fonts-all fastfetch mako stow
+jetbrains-mono-fonts-all fastfetch mako
 ```
 
-`stow` is only needed to install the dotfiles repo (section 10), and
-`python3-gobject` only to regenerate the GTK4 theme (6.2).
+`python3-gobject` is only needed to regenerate the GTK4 theme (6.2).
 
 In the repo, `install-packages.sh` installs these on Fedora (dnf), Arch
 (pacman) or Debian/Ubuntu (apt), from a minimal TTY-only install upwards. A
@@ -1100,7 +1099,7 @@ Flatpak is not in use; no Flatpaks are installed.
 - Anything in `~/Downloads`, other personal folders, `~/.cache`
 - The absolute home path (`/home/<user>`) in any file; use `$HOME` or `~`
 
-## 10. Suggested repo layout (XDG-relative, for GNU Stow)
+## 10. Repo layout (XDG-relative)
 
 ```
 dotfiles/
@@ -1116,27 +1115,29 @@ dotfiles/
     {org.gnome.clocks,org.pulseaudio.pavucontrol,blueman-manager,blueman-adapters,spotify-web,
      org.gnome.Nautilus,org.xfce.mousepad,galculator}.desktop
   bash/.bashrc
-  firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # not stowed, see below
-  scripts/gen-gtk4-crimson.py                                    # not stowed (6.2)
+  firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # installed into the profile, see below
+  scripts/gen-gtk4-crimson.py                                    # not installed (6.2)
   install-packages.sh   # section 7
   install.sh
   README.md             # this spec, condensed
 ```
 
-Everything except `firefox/` and `scripts/` is a Stow package. `install.sh`
-stows them with `--no-folding` (so a missing `~/.local/share/applications`
-becomes a real directory, not a symlink into the repo that later writes would
-land in), then handles the pieces a symlink can't: it symlinks the Firefox
+Every other top-level directory holds files laid out relative to `$HOME`.
+`install.sh` **copies** them into place (it doesn't symlink them), so each
+installation's configs are its own to edit, and hardware-specific changes
+stay on that machine instead of turning into local changes to the repo. It
+records the repo version of each file it installed in
+`~/.local/state/crimson-dotfiles/installed`; on a re-run after `git pull` it
+updates files that are unchanged since, leaves edited ones alone with the
+repo's new version beside them as `<file>.new`, and never overwrites a file
+it didn't install unless given `--force` (which keeps a `.bak`). Symlinks
+into the repo left by earlier, Stow-based versions are replaced with copies.
+
+It then handles the pieces that aren't plain files: it copies the Firefox
 stylesheets into the profile named by `profiles.ini` and merges `user.js`
 (the profile directory name is random), writes galculator's five colour keys
-into its existing config (galculator rewrites that file on exit, which would
-replace a stowed symlink), and sets Mousepad's `gsettings` key.
-
-**This machine** runs from the repo since 2026-09-25: every Stow-managed
-config in `$HOME` is a symlink into `~/desktop-spec/dotfiles`, so edit files
-there (or through the symlinks) and they take effect live. Moving or renaming
-the repo breaks the links; re-run `./install.sh` from the new location. The
-pre-switch files were backed up locally.
+into its existing config (galculator rewrites that file on exit), and sets
+Mousepad's `gsettings` key.
 
 ## 11. Rebuild checklist
 
@@ -1144,7 +1145,7 @@ pre-switch files were backed up locally.
 2. Run `./install-packages.sh` (section 7).
 3. Optionally place a wallpaper at `~/Pictures/wallpaper.png`, and put the
    `wlr-randr` scale line in `~/.config/labwc/autostart.local` (section 2.2).
-4. Install the configs from sections 2-5 (or `stow` the repo).
+4. Install the configs from sections 2-5 (or run `./install.sh`).
 5. Add the dark-mode launcher overrides (6.1, 6.2), the Crimson Dark app files
    and Mousepad `gsettings` (6.4), and the `labwc` launch line (section 2).
    Start Firefox once so it creates a profile, then add 6.5's files (or run

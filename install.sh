@@ -1,133 +1,175 @@
 #!/usr/bin/env bash
-# Installs this repo's packages into $HOME with GNU Stow, then does the parts
-# of the Crimson Dark theme that can't be symlinked:
-#   - spotify-web.desktop needs an absolute path (.desktop Exec lines are not
-#     variable-expanded by spec, so it can't just be "$HOME") and the local
-#     name of Chromium's command
-#   - galculator display colours (galculator rewrites its config on exit,
-#     which would replace a stowed symlink)
+# Copies this repo's config files into $HOME, then does the parts of the
+# Crimson Dark theme that aren't plain files:
+#   - galculator display colours (galculator rewrites its config on exit, so
+#     only its colour keys are set)
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
 #   - Firefox userChrome/userContent (the profile directory name is random)
 #
+# The copies are yours to edit; the repo is only where they come from. Each
+# run remembers what it installed (in $state_dir below), so a re-run after
+# "git pull":
+#   - updates files you haven't changed
+#   - leaves files you have changed alone, and puts the repo's new version
+#     next to them as <file>.new for you to compare and merge
+#   - never overwrites a file it didn't install, unless you pass --force
+#     (which backs it up to <file>.bak first)
+#
 # Usage: ./install.sh              # everything
-#        ./install.sh labwc bash   # only these (stow packages and/or the
-#                                  # extras: galculator mousepad firefox)
-#        ./install.sh --verbose    # also show every file stow links
+#        ./install.sh labwc bash   # only these (config directories in this
+#                                  # repo and/or the extras: galculator
+#                                  # mousepad firefox)
+#        ./install.sh --force      # replace files that differ, keeping .bak
+#        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
 cd "$(dirname "$0")"
+repo=$PWD
+
+state_dir=${XDG_STATE_HOME:-$HOME/.local/state}/crimson-dotfiles
+# One line per installed file: the sha256 of the repo version it was last
+# brought up to date with, then its absolute path.
+manifest=$state_dir/installed
 
 # spotify-web.desktop is generated from the repo copy: __HOME__ becomes the
-# home path and __CHROMIUM__ the Chromium command, which is chromium-browser
-# on Fedora and chromium on Arch and Debian.
+# home path (.desktop Exec lines aren't variable-expanded, so it can't just be
+# "$HOME") and __CHROMIUM__ the Chromium command, which is chromium-browser on
+# Fedora and chromium on Arch and Debian.
 spotify_src=applications/.local/share/applications/spotify-web.desktop
-spotify_dst="$HOME/.local/share/applications/spotify-web.desktop"
-chromium_cmds=(chromium-browser chromium)
-render_spotify() {
-  sed -e "s|__HOME__|$HOME|g" -e "s|__CHROMIUM__|$1|g" "$spotify_src"
-}
 
-stow_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk4 gtksourceview dbus)
+files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk4 gtksourceview dbus)
 extras_all=(galculator mousepad firefox)
 
 verbose=0
+force=0
 targets=()
 for a in "$@"; do
   case $a in
     -v|--verbose) verbose=1 ;;
+    -f|--force)   force=1 ;;
+    -*)           echo "Unknown option: $a" >&2; exit 2 ;;
     *)            targets+=("$a") ;;
   esac
 done
 if [ ${#targets[@]} -eq 0 ]; then
-  targets=("${stow_all[@]}" "${extras_all[@]}")
+  targets=("${files_all[@]}" "${extras_all[@]}")
 fi
 
-stow_pkgs=()
+groups=()
 extras=()
-skipped=()
-relinked_spotify=0
 for t in "${targets[@]}"; do
   case " ${extras_all[*]} " in
     *" $t "*) extras+=("$t") ;;
-    *)        stow_pkgs+=("$t") ;;
+    *) if [ -d "$t" ] && [[ " ${files_all[*]} " == *" $t "* ]]; then groups+=("$t")
+       else echo "Unknown name: $t (expected one of: ${files_all[*]} ${extras_all[*]})" >&2; exit 2; fi ;;
   esac
 done
 
-if [ ${#stow_pkgs[@]} -gt 0 ]; then
-  if ! command -v stow >/dev/null; then
-    echo "GNU Stow is required (dnf install stow / apt install stow)." >&2
-    exit 1
-  fi
-  # A previous run replaced spotify-web.desktop's symlink with a generated
-  # copy (see below). Remove it if it's still exactly that, with either
-  # Chromium command, so stow can re-link; a hand-edited copy is left alone
-  # and stow reports the conflict.
-  if [[ " ${stow_pkgs[*]} " == *" applications "* ]] &&
-     [ -f "$spotify_dst" ] && [ ! -L "$spotify_dst" ]; then
-    for c in "${chromium_cmds[@]}"; do
-      if [ "$(render_spotify "$c")" = "$(<"$spotify_dst")" ]; then
-        rm "$spotify_dst"
-        relinked_spotify=1
-        break
-      fi
-    done
-  fi
+declare -A baseline=()
+if [ -f "$manifest" ]; then
+  while read -r h p; do [ -n "$p" ] && baseline[$p]=$h; done < "$manifest"
+fi
+save_manifest() {
+  mkdir -p "$state_dir"
+  local p
+  for p in "${!baseline[@]}"; do printf '%s %s\n' "${baseline[$p]}" "$p"; done |
+    sort -k2 > "$manifest.tmp"
+  mv "$manifest.tmp" "$manifest"
+}
 
-  # --no-folding: create real directories and link individual files. With
-  # folding, a missing ~/.local/share/applications would become a symlink to
-  # the repo, and anything written there later (desktop database caches, the
-  # spotify-web fix-up below) would land inside the repo.
-  #
-  # One package at a time: stow aborts every package in a call if any one of
-  # them conflicts, and on an existing account something (usually .bashrc)
-  # almost always does.
-  echo "Linking config files into $HOME:"
+sha() { sha256sum "$1" | cut -d' ' -f1; }
+tilde() { echo "~${1#"$HOME"}"; }
+
+# Results of the current group, and of the whole run.
+n_new=0 n_updated=0 n_same=0 n_custom=0
+pending=()   # files with a .new version waiting
+backed_up=() # files --force replaced
+
+# place SRC DST: install SRC's content at DST (an absolute path).
+place() {
+  local src=$1 dst=$2 new cur base action
+  new=$(sha "$src")
+  base=${baseline[$dst]:-}
+  # Earlier versions of this script symlinked files into the repo. Swap
+  # those for copies; they point at the same content.
+  if [ -L "$dst" ] && [[ $(readlink -f "$dst") == "$repo"/* ]]; then
+    rm "$dst"
+    base=$new
+  fi
+  if [ ! -e "$dst" ] && [ ! -L "$dst" ]; then
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+    action=installed; n_new=$((n_new + 1))
+  else
+    cur=$(sha "$dst")
+    if [ "$cur" = "$new" ]; then
+      action="up to date"; n_same=$((n_same + 1))
+    elif [ -n "$base" ] && [ "$cur" = "$base" ]; then
+      # Unchanged since we installed it: take the repo's new version.
+      cp "$src" "$dst"
+      action=updated; n_updated=$((n_updated + 1))
+    elif [ $force -eq 1 ]; then
+      mv "$dst" "$dst.bak"
+      cp "$src" "$dst"
+      backed_up+=("$dst")
+      action="replaced (old copy in $(basename "$dst").bak)"; n_updated=$((n_updated + 1))
+    elif [ "$base" = "$new" ]; then
+      # Your changes, and nothing new from the repo.
+      action="kept your changes"; n_custom=$((n_custom + 1))
+    else
+      # Your changes (or a file that was here before), and the repo has a
+      # version you haven't seen: leave yours, put the repo's beside it.
+      cp "$src" "$dst.new"
+      pending+=("$dst")
+      action="kept yours, repo version in $(basename "$dst").new"; n_custom=$((n_custom + 1))
+    fi
+  fi
+  # A .new that's been merged in (or made obsolete) is no longer needed.
+  if [ -f "$dst.new" ] && [ "$(sha "$dst")" = "$new" ]; then rm "$dst.new"; fi
+  baseline[$dst]=$new
+  [ $verbose -eq 1 ] && printf '      %s: %s\n' "$(tilde "$dst")" "$action"
+  return 0
+}
+
+if [ ${#groups[@]} -gt 0 ]; then
+  echo "Copying config files into $HOME:"
   # A new account's ~/.bashrc is just the distro's stock copy from /etc/skel.
-  # Move it to ~/.bashrc.skel, which this repo's .bashrc sources, so bash can
-  # be linked. A .bashrc with changes of your own is left alone (skipped).
-  if [[ " ${stow_pkgs[*]} " == *" bash "* ]] && [ -f "$HOME/.bashrc" ] &&
+  # Move it to ~/.bashrc.skel, which this repo's .bashrc sources, so the
+  # distro's defaults are kept.
+  if [[ " ${groups[*]} " == *" bash "* ]] && [ -f "$HOME/.bashrc" ] &&
      [ ! -L "$HOME/.bashrc" ] && [ -f /etc/skel/.bashrc ] &&
      [ "$(<"$HOME/.bashrc")" = "$(</etc/skel/.bashrc)" ]; then
     mv "$HOME/.bashrc" "$HOME/.bashrc.skel"
     echo "  (your ~/.bashrc was the distro's stock one; moved to ~/.bashrc.skel)"
   fi
-  for pkg in "${stow_pkgs[@]}"; do
-    if out=$(stow -v --no-folding -t "$HOME" "$pkg" 2>&1); then
-      n=$(grep -c '^LINK:' <<< "$out" || true)
-      # Re-linking the launcher removed above isn't news on a re-run.
-      [ "$pkg" = applications ] && [ $relinked_spotify -eq 1 ] && n=$((n - 1))
-      if [ "$n" -eq 0 ]; then status="already linked"
-      elif [ "$n" -eq 1 ]; then status="linked (1 file)"
-      else status="linked ($n files)"; fi
-    else
-      skipped+=("$pkg")
-      # The files in the way. Stow 2.4 says "... over existing target X since
-      # ...", 2.3 says "existing target is ...: X".
-      conflicts=$(sed -n -e 's/.* over existing target \(.*\) since .*/~\/\1/p' \
-                         -e 's/.*existing target is [^:]*: \(.*\)/~\/\1/p' <<< "$out" | xargs)
-      if [ -n "$conflicts" ]; then status="skipped: $conflicts already exists"
-      else status="skipped: $(grep -v '^$' <<< "$out" | tail -1)"; fi
-    fi
-    printf '  %-14s %s\n' "$pkg" "$status"
-    [ $verbose -eq 1 ] && [ -n "$out" ] && sed 's/^/      /' <<< "$out"
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  for g in "${groups[@]}"; do
+    n_new=0 n_updated=0 n_same=0 n_custom=0
+    while IFS= read -r -d '' f; do
+      src=$f
+      if [ "$f" = "$spotify_src" ]; then
+        chromium=chromium
+        for c in chromium-browser chromium; do
+          command -v "$c" >/dev/null && { chromium=$c; break; }
+        done
+        command -v "$chromium" >/dev/null ||
+          echo "  (Spotify launcher: Chromium not found, so it uses 'chromium'. Re-run after installing it.)"
+        src=$tmp/spotify-web.desktop
+        sed -e "s|__HOME__|$HOME|g" -e "s|__CHROMIUM__|$chromium|g" "$f" > "$src"
+      fi
+      place "$src" "$HOME/${f#"$g"/}"
+    done < <(find "$g" -type f ! -name '*.bak' ! -name '*~' ! -name mimeinfo.cache -print0 | sort -z)
+    parts=()
+    [ $n_new -gt 0 ]     && parts+=("$n_new new")
+    [ $n_updated -gt 0 ] && parts+=("$n_updated updated")
+    [ $n_custom -gt 0 ]  && parts+=("$n_custom customised")
+    [ ${#parts[@]} -eq 0 ] && parts=("up to date")
+    status=$(IFS=,; echo "${parts[*]}" | sed 's/,/, /g')
+    printf '  %-14s %s\n' "$g" "$status"
   done
+  save_manifest
+  echo
 fi
-
-# Replace the stowed spotify-web.desktop symlink with a generated copy, so
-# the repo keeps its placeholders. Also regenerate it if it was removed above
-# but applications was then skipped for a conflict.
-if [ -L "$spotify_dst" ] || [ $relinked_spotify -eq 1 ]; then
-  chromium=""
-  for c in "${chromium_cmds[@]}"; do
-    command -v "$c" >/dev/null && { chromium=$c; break; }
-  done
-  if [ -z "$chromium" ]; then
-    chromium=chromium
-    echo "  (Spotify launcher: Chromium not found, so it uses 'chromium'. Re-run after installing it.)"
-  fi
-  rm -f "$spotify_dst"
-  render_spotify "$chromium" > "$spotify_dst"
-fi
-[ ${#stow_pkgs[@]} -gt 0 ] && echo
 
 install_galculator() {
   local conf="$HOME/.config/galculator/galculator.conf"
@@ -195,10 +237,10 @@ install_firefox() {
     echo "firefox: couldn't work out the default profile from $ini; skipped." >&2
     return
   fi
-  local p="$base/$profile"
-  mkdir -p "$p/chrome"
-  ln -sfn "$PWD/firefox/chrome/userChrome.css" "$p/chrome/userChrome.css"
-  ln -sfn "$PWD/firefox/chrome/userContent.css" "$p/chrome/userContent.css"
+  local p="$base/$profile" f
+  for f in userChrome.css userContent.css; do
+    place "firefox/chrome/$f" "$p/chrome/$f"
+  done
   # Merge prefs into user.js rather than replacing any existing one.
   touch "$p/user.js"
   local line
@@ -209,10 +251,15 @@ install_firefox() {
 }
 
 if [ ${#extras[@]} -gt 0 ]; then
-  echo "Theme settings that can't be linked:"
+  tmp_out=$(mktemp)
+  echo "Theme settings that aren't plain config files:"
   for e in "${extras[@]}"; do
-    "install_$e" 2>&1 | sed 's/^/  /'
+    # Not in a pipeline, so place() can update the manifest and lists.
+    "install_$e" > "$tmp_out" 2>&1 || true
+    sed 's/^/  /' "$tmp_out"
   done
+  rm -f "$tmp_out"
+  save_manifest
   echo
 fi
 
@@ -231,22 +278,29 @@ To start the desktop:
 
 Optional:
   - A wallpaper at ~/Pictures/wallpaper.png (otherwise a plain background).
-  - Per-machine settings such as display scaling in
-    ~/.config/labwc/autostart.local, e.g.:
+  - Your own changes: edit the files in ~/.config and ~/.local/share
+    directly. They're copies, and re-running this script won't undo them.
+    Display scaling is a good fit for ~/.config/labwc/autostart.local, e.g.:
       wlr-randr --output eDP-1 --scale 1.4
   - After a GTK4 upgrade, regenerate the Volume Control theme:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
+    ./install.sh themes
 EOF
 command -v labwc >/dev/null ||
   printf '\nlabwc isn'"'"'t installed yet: run ./install-packages.sh first.\n'
 
 echo
-if [ ${#skipped[@]} -gt 0 ]; then
-  cat <<EOF
-Done, but $([ ${#skipped[@]} -eq 1 ] && echo "1 package was" || echo "${#skipped[@]} packages were") skipped because files already exist:
-  ${skipped[*]}
-Move or merge those files (listed above), then run: ./install.sh ${skipped[*]}
-EOF
-  exit 1
+if [ ${#pending[@]} -gt 0 ]; then
+  echo "These files differ from the repo's latest version and were left as they"
+  echo "are. The repo's version is beside each as .new: compare, merge what you"
+  echo "want, then delete the .new."
+  for p in "${pending[@]}"; do echo "  diff $(tilde "$p") $(tilde "$p").new"; done
+  echo "(Or run with --force to take the repo versions, backing yours up as .bak.)"
+  echo
+fi
+if [ ${#backed_up[@]} -gt 0 ]; then
+  echo "Replaced with the repo's version (your old copies are the .bak files):"
+  for p in "${backed_up[@]}"; do echo "  $(tilde "$p")"; done
+  echo
 fi
 echo "Done."

@@ -112,7 +112,6 @@ media player       | vlc                      | vlc                | vlc
 clock              | gnome-clocks             | gnome-clocks       | gnome-clocks
 system info        | fastfetch                | fastfetch          | fastfetch
 notifications      | mako                     | mako               | mako-notifier/mako
-dotfile installer  | stow                     | stow               | stow
 GTK4 theme script  | python3-gobject          | python-gobject     | python3-gi
 '
 

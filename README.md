@@ -9,8 +9,8 @@ Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
 ## Layout
 
-Each top-level directory is a [GNU Stow](https://www.gnu.org/software/stow/)
-package, laid out relative to `$HOME`:
+Each top-level directory holds config files laid out relative to `$HOME`,
+which `install.sh` copies into place:
 
 ```
 labwc/.config/labwc/{environment,autostart,rc.xml}
@@ -30,11 +30,11 @@ install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar f
 install.sh
 ```
 
-Not stowed, applied by `install.sh` instead:
+Handled separately by `install.sh`:
 
 ```
-firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # symlinked/merged into the default profile
-scripts/gen-gtk4-crimson.py   # regenerates gtk-4.0/gtk.css from GTK's own stylesheet
+firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # copied/merged into the default profile
+scripts/gen-gtk4-crimson.py   # regenerates gtk-4.0/gtk.css from GTK's own stylesheet (not installed)
 ```
 
 plus galculator's display colours (written into `galculator.conf`) and
@@ -78,35 +78,50 @@ repo somewhere like `~/dotfiles`, not `~/.dotfiles`.
 
 ### install.sh
 
-Stows every package into `$HOME`, fills in the one `.desktop` file that
-needs an absolute path, applies the non-stowable theme pieces (`galculator`,
-`mousepad`, `firefox`), creates `~/Pictures`, refreshes the desktop database
-and reloads the D-Bus session config. Pass names to install a subset, e.g.
-`./install.sh alacritty bash firefox`, and `--verbose` to see every file.
+Copies every config file into `$HOME`, fills in the one `.desktop` file that
+needs an absolute path, applies the theme pieces that aren't plain files
+(`galculator`, `mousepad`, `firefox`), creates `~/Pictures`, refreshes the
+desktop database and reloads the D-Bus session config. Pass names to install
+a subset, e.g. `./install.sh alacritty bash firefox`, and `--verbose` to see
+what happened to every file.
 
-It is safe to re-run. Stow runs with `--no-folding`, so only individual files
-are symlinked and nothing written into `~/.config/...` or `~/.local/share/...`
-later ends up inside this repo. Existing regular files in `$HOME` are never
-overwritten. Any package that would replace one is skipped, the rest are
-installed, and the script lists what it skipped at the end. Move or merge
-those files, then re-run with just those package names.
+The installed files are copies, not links into this repo: once installed,
+they're yours to edit, and the repo stays clean. It is safe to re-run (for
+example after `git pull`). The script remembers which version of each file
+it installed (in `~/.local/state/crimson-dotfiles/`), and on a re-run:
+
+- files you haven't changed are updated to the repo's current version;
+- files you have changed are left alone. If the repo's version has changed
+  too, it's written beside yours as `<file>.new` and listed at the end, so
+  you can compare and merge (`diff`), then delete the `.new`;
+- files that were already there before the first install are treated the
+  same way: never overwritten, with the repo's version as `.new`.
+
+`--force` replaces files that differ with the repo's version, keeping yours
+as `<file>.bak`.
 
 The one exception is a `~/.bashrc` that is still the distro's stock copy
 from `/etc/skel` (as on a new install): it's moved to `~/.bashrc.skel`,
 which this repo's `.bashrc` sources, so you keep your distro's defaults.
 
+Installs made by earlier versions of this script symlinked files into the
+repo; a re-run replaces those symlinks with copies.
+
 Firefox needs a profile to exist first (start and quit it once, then run
 `./install.sh firefox`), and a restart to pick up the stylesheets. galculator
 must be closed while its colours are written.
 
-### Per-machine settings
+### Your own changes
 
 - Wallpaper: `~/Pictures/wallpaper.png` if it exists (desktop and lock
   screen), otherwise the theme's background colour.
-- Display scaling and anything else specific to one machine: put it in
-  `~/.config/labwc/autostart.local`, which `autostart` runs and which isn't
-  part of this repo. For example:
-  `wlr-randr --output eDP-1 --scale 1.4`
+- Anything specific to one machine (a different monitor setup, the bar on
+  one screen only, keybindings): edit the installed files in `~/.config`
+  directly.
+- Display scaling and other startup commands can also go in
+  `~/.config/labwc/autostart.local`, which `autostart` runs and which the
+  repo doesn't ship, so repo updates to `autostart` still apply cleanly.
+  For example: `wlr-randr --output eDP-1 --scale 1.4`
 
 ## Known gaps (see SPEC.md section 8 for details)
 
