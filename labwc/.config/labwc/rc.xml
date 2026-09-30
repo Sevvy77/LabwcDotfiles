@@ -46,7 +46,7 @@
       <action name="ToggleMaximize" />
     </keybind>
     <keybind key="W-c" onRelease="yes">
-      <action name="Execute" command="gnome-clocks" />
+      <action name="Execute" command="env ADW_DEBUG_COLOR_SCHEME=prefer-dark gnome-clocks" />
     </keybind>
     <keybind key="W-p" onRelease="yes">
       <action name="Execute">

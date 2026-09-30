@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.gnome.clocks
+Exec=/usr/bin/env ADW_DEBUG_COLOR_SCHEME=prefer-dark /usr/bin/gnome-clocks --gapplication-service

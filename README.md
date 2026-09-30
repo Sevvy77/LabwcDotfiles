@@ -24,10 +24,12 @@ themes/.local/share/themes/OB-Crimson-Dark/
 gtk4/.config/gtk-4.0/gtk.css                       # libadwaita apps in dark mode (Nautilus, Clocks)
 gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad editor
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
+dbus/.local/share/dbus-1/services/org.gnome.clocks.service           # dark Clocks when D-Bus-started (alarms)
 applications/.local/share/applications/*.desktop   # theme overrides + custom launchers
 bash/.bashrc
 install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt)
 install.sh
+update.sh             # pull from GitHub, then install over your configs (install.sh --force)
 ```
 
 Handled separately by `install.sh`:
@@ -110,6 +112,18 @@ repo; a re-run replaces those symlinks with copies.
 Firefox needs a profile to exist first (start and quit it once, then run
 `./install.sh firefox`), and a restart to pick up the stylesheets. galculator
 must be closed while its colours are written.
+
+### update.sh
+
+Gets the latest version from GitHub and installs it over your config files,
+replacing any that differ from the repo (your changed copies are kept as
+`<file>.bak`). It's `git pull --ff-only` then `./install.sh --force`, and
+takes the same names and `--verbose`. Without git (e.g. a copy from the
+.zip), it downloads the repo with curl or wget instead. Works on Fedora,
+Arch, CachyOS, Debian and Ubuntu.
+
+Use `./install.sh` after `git pull` instead if you'd rather keep your
+changes and merge the repo's `.new` versions yourself.
 
 ### Your own changes
 

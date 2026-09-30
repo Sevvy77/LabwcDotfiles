@@ -89,7 +89,7 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 | `W-t` | `nautilus` (Files) |
 | `W-n` | `wdisplays` (display settings) |
 | `W-m` | Toggle maximize |
-| `W-c` | `gnome-clocks` |
+| `W-c` | `gnome-clocks` (dark, see 6.1) |
 | `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
 | `W-k` | `fuzzel` (app launcher) |
 | `C-A-BackSpace` | Exit labwc |
@@ -322,6 +322,26 @@ DBusActivatable=false
 `GTK_THEME=Adwaita:dark` does **not** work (it switches to the legacy GTK
 theme, not libadwaita's dark style). Alternative for the whole desktop:
 `gsettings set org.gnome.desktop.interface color-scheme prefer-dark`.
+
+The launcher isn't the only way Clocks starts, so two more places set the
+variable too:
+
+- The `W-c` keybind in `rc.xml` runs
+  `env ADW_DEBUG_COLOR_SCHEME=prefer-dark gnome-clocks`. A bare `gnome-clocks`
+  there opens light.
+- Clocks is also D-Bus-started (e.g. to ring alarms), which runs
+  `/usr/share/dbus-1/services/org.gnome.clocks.service` without the variable.
+  `~/.local/share/dbus-1/services/org.gnome.clocks.service` overrides it (same
+  approach as Nautilus, 6.4):
+
+  ```
+  [D-BUS Service]
+  Name=org.gnome.clocks
+  Exec=/usr/bin/env ADW_DEBUG_COLOR_SCHEME=prefer-dark /usr/bin/gnome-clocks --gapplication-service
+  ```
+
+Clocks is single-instance: launching it again only raises a running window, so
+a Clocks that started light stays light until you quit it.
 
 ### 6.2 Dark mode for Blueman, Crimson Dark for pavucontrol
 
@@ -1111,6 +1131,7 @@ dotfiles/
   gtk4/.config/gtk-4.0/gtk.css
   gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml
   dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service
+  dbus/.local/share/dbus-1/services/org.gnome.clocks.service
   applications/.local/share/applications/
     {org.gnome.clocks,org.pulseaudio.pavucontrol,blueman-manager,blueman-adapters,spotify-web,
      org.gnome.Nautilus,org.xfce.mousepad,galculator}.desktop
@@ -1119,6 +1140,7 @@ dotfiles/
   scripts/gen-gtk4-crimson.py                                    # not installed (6.2)
   install-packages.sh   # section 7
   install.sh
+  update.sh             # git pull (or download), then install.sh --force
   README.md             # this spec, condensed
 ```
 

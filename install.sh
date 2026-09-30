@@ -265,7 +265,7 @@ fi
 
 mkdir -p "$HOME/Pictures"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
-# Let the session bus see the Nautilus D-Bus override without logging out.
+# Let the session bus see the D-Bus overrides (Nautilus, Clocks) without logging out.
 busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
   org.freedesktop.DBus ReloadConfig >/dev/null 2>&1 || true
 
