@@ -1050,6 +1050,17 @@ gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` carry
 the same three values for apps started without a D-Bus session.
 
+GTK4 and libadwaita apps get these values from the settings portal, so they
+need a portal backend that implements it: **`xdg-desktop-portal-gtk`**
+(`install-packages.sh` installs it). labwc's `labwc-portals.conf` says
+`default=wlr;*`, and xdg-desktop-portal-wlr has no settings portal, so
+without the GTK backend Nautilus, Clocks and pavucontrol ignore the dark
+style, theme and icons and open light. Fedora only pulls it in as a weak
+dependency of GTK, which minimal installs such as Fedora Asahi Remix skip.
+Reproduced in a Fedora 44 container installed without weak dependencies:
+plain `nautilus` opens light, and dark once the package is installed (log
+out and back in, or restart xdg-desktop-portal, after installing it).
+
 - GTK3 apps (Mousepad, galculator, Blueman, LibreOffice, gtklock) load
   `OB-Crimson-Dark/gtk-3.0/gtk.css`.
 - Plain GTK4 apps (pavucontrol) load `OB-Crimson-Dark/gtk-4.0/gtk-dark.css`

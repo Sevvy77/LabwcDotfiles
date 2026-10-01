@@ -114,6 +114,7 @@ clock              | gnome-clocks             | gnome-clocks       | gnome-clock
 system info        | fastfetch                | fastfetch          | fastfetch
 notifications      | mako                     | mako               | mako-notifier/mako
 GTK4 theme script  | python3-gobject          | python-gobject     | python3-gi
+dark mode for GTK4 | xdg-desktop-portal-gtk   | xdg-desktop-portal-gtk | xdg-desktop-portal-gtk
 '
 
 # What building sfwbar from source needs (only installed if it's built).
