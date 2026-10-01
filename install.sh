@@ -212,11 +212,11 @@ install_gtk() {
     [ "$(gsettings get $schema "$key" 2>/dev/null)" = "'$value'" ] || failed=1
   done <<'EOF'
 gtk-theme OB-Crimson-Dark
-icon-theme Adwaita
+icon-theme Crimson-Wine
 color-scheme prefer-dark
 EOF
   if [ $failed -eq 0 ]; then
-    echo "gtk: theme set to OB-Crimson-Dark, dark style preferred."
+    echo "gtk: theme set to OB-Crimson-Dark with Crimson-Wine icons, dark style preferred."
   else
     echo "gtk: couldn't save the GTK theme settings (no D-Bus session yet?)." >&2
     echo "     Log out and in again, then run: ./install.sh gtk" >&2

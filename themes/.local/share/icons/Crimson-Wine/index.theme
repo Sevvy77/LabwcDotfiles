@@ -1,0 +1,12 @@
+# GNOME-Colors Wine (red) icons, with fallbacks. It has no icons of its own.
+# The Wine theme's directory is gnome-wine on Arch and Debian/Ubuntu and
+# gnome-colors-wine on Fedora; whichever is installed is used. Wine inherits
+# the old "gnome" icon theme, which current distros no longer ship, so
+# anything it lacks (notably the -symbolic icons GTK3/4 widgets use) comes
+# from Adwaita instead of showing as a missing-icon placeholder.
+[Icon Theme]
+Name=Crimson Wine
+Comment=GNOME-Colors Wine with Adwaita fallbacks
+Inherits=gnome-wine,gnome-colors-wine,Adwaita,AdwaitaLegacy,hicolor
+Example=folder
+Directories=

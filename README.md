@@ -18,6 +18,7 @@ labwc/.config/labwc/{environment,autostart,rc.xml}
 sfwbar/.config/sfwbar/sfwbar.config
 fuzzel/.config/fuzzel/fuzzel.ini
 alacritty/.config/alacritty/alacritty.toml
+themes/.local/share/icons/Crimson-Wine/index.theme   # red GNOME-Colors Wine icons + Adwaita fallbacks
 themes/.local/share/themes/OB-Crimson-Dark/
   labwc/themerc        # window theme
   gtk-3.0/gtk.css      # every GTK3 app (Mousepad, galculator, Blueman, LibreOffice, gtklock)

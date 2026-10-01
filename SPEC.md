@@ -268,8 +268,8 @@ before (verified by screenshot).
 **in sfwbar 1.0~beta16 the bar is not drawn at all without it** (verified
 2026-09-25 by removing it; the bar vanished, and restoring only this section
 brought it back). There is no `placer` section: sfwbar can't move windows on
-labwc, which places new windows itself. No icon theme is set, so the bar uses
-the system default.
+labwc, which places new windows itself. No icon theme is set here, so the bar
+uses the GTK one (Crimson-Wine, 6.6).
 
 **Styling:** `theme_text_color #E8D5D0`, `theme_bg_color #140C0D`,
 `theme_fg_color`/`borders #C0303A`. Taskbar items are rounded (4px) on a
@@ -1043,7 +1043,7 @@ through the settings portal, and ignores `settings.ini` for them):
 
 ```
 gsettings set org.gnome.desktop.interface gtk-theme OB-Crimson-Dark
-gsettings set org.gnome.desktop.interface icon-theme Adwaita
+gsettings set org.gnome.desktop.interface icon-theme Crimson-Wine
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 ```
 
@@ -1059,6 +1059,25 @@ the same three values for apps started without a D-Bus session.
   dark and pick up `~/.config/gtk-4.0/gtk.css` (6.4).
 - sfwbar is GTK3 too; its own CSS in `sfwbar.config` sets the bar's colours.
 
+**Icons: Crimson-Wine.** The red [GNOME-Colors](https://github.com/themix-project/gnome-colors-icon-theme)
+*Wine* set (`install-packages.sh`: `gnome-colors-icon-theme` on Fedora and
+from the AUR on Arch, `gnome-wine-icon-theme` on Debian/Ubuntu). It's used
+through a wrapper theme, `~/.local/share/icons/Crimson-Wine/index.theme`,
+that has no icons of its own and only sets
+`Inherits=gnome-wine,gnome-colors-wine,Adwaita,AdwaitaLegacy,hicolor`:
+
+- the Wine directory is `gnome-wine` on Arch and Debian/Ubuntu but
+  `gnome-colors-wine` on Fedora, and a missing name in `Inherits` is skipped;
+- GNOME-Colors dates from 2009 and has none of the `-symbolic` icons GTK3/4
+  widgets use, and its own fallback is the old `gnome` icon theme that
+  current distros don't ship, so those come from Adwaita;
+- without Wine installed at all, everything comes from Adwaita.
+
+fuzzel doesn't read GTK settings, so `fuzzel.ini` sets `icon-theme=Crimson-Wine`
+itself. Verified 2026-10-01 against a scratch build of gnome-wine 5.5.6:
+Nautilus shows red Wine folders, with Adwaita symbolic icons in the sidebar
+and header bar.
+
 Verified by screenshot on 2026-10-01 in a headless nested labwc, each app
 started directly (no launcher): gtklock, Mousepad, Blueman, pavucontrol and
 LibreOffice all render in the palette.
@@ -1073,7 +1092,7 @@ the Asahi Remix image, not from this list.)
 labwc sfwbar fuzzel alacritty swaybg gtklock grim slurp wl-clipboard wlr-randr wdisplays
 brightnessctl xorg-x11-server-Xwayland
 firefox chromium nautilus mousepad galculator pavucontrol blueman libreoffice vlc gnome-clocks
-jetbrains-mono-fonts-all fastfetch mako
+jetbrains-mono-fonts-all fastfetch mako gnome-colors-icon-theme
 ```
 
 `python3-gobject` is only needed to regenerate the GTK4 theme (6.2).
@@ -1086,7 +1105,8 @@ such as `firefox/firefox-esr`; every name is checked with `dnf info`,
 before installing, and anything not found is listed rather than failing the
 run. On top of the list above it installs what a minimal system lacks:
 graphics drivers (mesa), PipeWire + WirePlumber + the PulseAudio shim, bluez,
-the MATE polkit agent, DejaVu fonts, the Adwaita icon theme, Fedora's
+the MATE polkit agent, DejaVu fonts, the Adwaita and GNOME-Colors Wine icon
+themes, Fedora's
 `labwc-session` (the display-manager entry; other distros ship it inside
 `labwc`) and Debian/Ubuntu's `dbus-user-session`. It then enables
 `bluetooth.service` and the PipeWire user units.

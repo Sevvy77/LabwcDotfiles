@@ -100,6 +100,7 @@ bluetooth service  | bluez                    | bluez              | bluez
 interface font     | dejavu-sans-fonts        | ttf-dejavu         | fonts-dejavu-core
 terminal font      | jetbrains-mono-fonts-all | ttf-jetbrains-mono | fonts-jetbrains-mono
 icons              | adwaita-icon-theme       | adwaita-icon-theme | adwaita-icon-theme
+icons (red)        | gnome-colors-icon-theme  | gnome-colors-icon-theme | gnome-wine-icon-theme
 browser            | firefox                  | firefox            | firefox/firefox-esr
 browser (Spotify)  | chromium                 | chromium           | chromium/chromium-browser
 files              | nautilus                 | nautilus           | nautilus
