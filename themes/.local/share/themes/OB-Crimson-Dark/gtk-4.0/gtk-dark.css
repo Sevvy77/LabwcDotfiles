@@ -1,0 +1,3 @@
+/* GTK4 loads gtk-dark.css instead of gtk.css when the dark style is preferred
+   (which install.sh sets globally); same theme either way. */
+@import url("gtk.css");

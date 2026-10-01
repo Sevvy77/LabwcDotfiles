@@ -3,9 +3,6 @@
   <keyboard>
     <default />
     <!-- The W- prefix refers to the Super key -->
-    <keybind key="W-f" onRelease="yes">
-      <action name="Execute" command="firefox" />
-    </keybind>
     <keybind key="W-Return" onRelease="yes">
       <action name="Execute" command="alacritty" />
     </keybind>
@@ -24,29 +21,23 @@
         <command>brightnessctl set 5%-</command>
       </action>
     </keybind>
-    <keybind key="W-q">
+    <keybind key="W-j">
       <action name="Close" />
     </keybind>
-    <keybind key="W-s" onRelease="yes">
-      <action name="Execute" command="slack" />
-    </keybind>
     <keybind key="W-l" onRelease="yes">
-      <action name="Execute" command="swaylock -i ~/Pictures/wallpaper.png" />
+      <action name="Execute" command="gtklock" />
     </keybind>
     <keybind key="W-g" onRelease="yes">
       <action name="Execute" command="google-chrome" />
     </keybind>
-    <keybind key="W-t" onRelease="yes">
+    <keybind key="W-semicolon" onRelease="yes">
       <action name="Execute" command="nautilus" />
     </keybind>
     <keybind key="W-n" onRelease="yes">
       <action name="Execute" command="wdisplays" />
     </keybind>
-    <keybind key="W-m" onRelease="yes">
+    <keybind key="W-h" onRelease="yes">
       <action name="ToggleMaximize" />
-    </keybind>
-    <keybind key="W-c" onRelease="yes">
-      <action name="Execute" command="env ADW_DEBUG_COLOR_SCHEME=prefer-dark gnome-clocks" />
     </keybind>
     <keybind key="W-p" onRelease="yes">
       <action name="Execute">
@@ -55,9 +46,6 @@
     </keybind>
     <keybind key="W-k" onRelease="yes">
       <action name="Execute" command="fuzzel" />
-    </keybind>
-    <keybind key="C-A-BackSpace">
-      <action name="Exit" />
     </keybind>
   </keyboard>
   <theme>

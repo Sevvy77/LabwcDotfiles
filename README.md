@@ -2,9 +2,10 @@
 
 labwc + sfwbar + fuzzel + alacritty, themed **Crimson Dark** throughout (window
 chrome, terminal, launcher, bar, Firefox, Nautilus, Mousepad, galculator,
-Clocks, Volume Control). Built on Fedora Asahi Remix; installs on Fedora,
+Clocks, Volume Control, lock screen and every other GTK app, LibreOffice
+included). Built on Fedora Asahi Remix; installs on Fedora,
 Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
-or alongside an existing desktop. LibreOffice is left stock.
+or alongside an existing desktop.
 Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
 ## Layout
@@ -19,8 +20,12 @@ fuzzel/.config/fuzzel/fuzzel.ini
 alacritty/.config/alacritty/alacritty.toml
 themes/.local/share/themes/OB-Crimson-Dark/
   labwc/themerc        # window theme
-  gtk-3.0/gtk.css      # Mousepad, galculator (via GTK_THEME on their launchers)
-  gtk-4.0/gtk.css      # Volume Control (generated, see scripts/)
+  gtk-3.0/gtk.css      # every GTK3 app (Mousepad, galculator, Blueman, LibreOffice, gtklock)
+  gtk-4.0/gtk.css      # plain GTK4 apps: Volume Control (generated, see scripts/)
+  gtk-4.0/gtk-dark.css # imports gtk.css; GTK4 loads it when dark is preferred
+gtk3/.config/gtk-3.0/settings.ini                  # GTK theme = OB-Crimson-Dark, prefer dark
+gtklock/.config/gtklock/style.css                  # lock screen wallpaper (fills portrait screens too)
+gtk4/.config/gtk-4.0/settings.ini                  # same, for GTK4
 gtk4/.config/gtk-4.0/gtk.css                       # libadwaita apps in dark mode (Nautilus, Clocks)
 gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad editor
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
@@ -39,8 +44,10 @@ firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # copied/merged i
 scripts/gen-gtk4-crimson.py   # regenerates gtk-4.0/gtk.css from GTK's own stylesheet (not installed)
 ```
 
-plus galculator's display colours (written into `galculator.conf`) and
-Mousepad's `crimson-dark` colour scheme (set with `gsettings`).
+plus galculator's display colours (written into `galculator.conf`),
+Mousepad's `crimson-dark` colour scheme, and the global GTK theme and dark
+style (`org.gnome.desktop.interface` gtk-theme / color-scheme; all set with
+`gsettings`, which is what GTK reads on Wayland).
 
 ## Install
 

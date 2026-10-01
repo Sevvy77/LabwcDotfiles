@@ -83,7 +83,7 @@ bar                | sfwbar                   | sfwbar             | sfwbar
 launcher           | fuzzel                   | fuzzel             | fuzzel
 terminal           | alacritty                | alacritty          | alacritty
 wallpaper          | swaybg                   | swaybg             | swaybg
-lock screen        | swaylock                 | swaylock           | swaylock
+lock screen        | gtklock                  | gtklock            | gtklock
 screenshots        | grim                     | grim               | grim
 screenshot region  | slurp                    | slurp              | slurp
 screenshot to clip | wl-clipboard             | wl-clipboard       | wl-clipboard

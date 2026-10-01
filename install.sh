@@ -4,6 +4,7 @@
 #   - galculator display colours (galculator rewrites its config on exit, so
 #     only its colour keys are set)
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
+#   - the GTK theme and dark style for every GTK app (also GSettings)
 #   - Firefox userChrome/userContent (the profile directory name is random)
 #
 # The copies are yours to edit; the repo is only where they come from. Each
@@ -18,7 +19,7 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (config directories in this
 #                                  # repo and/or the extras: galculator
-#                                  # mousepad firefox)
+#                                  # gtk mousepad firefox)
 #        ./install.sh --force      # replace files that differ, keeping .bak
 #        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
@@ -36,8 +37,8 @@ manifest=$state_dir/installed
 # Fedora and chromium on Arch and Debian.
 spotify_src=applications/.local/share/applications/spotify-web.desktop
 
-files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk4 gtksourceview dbus)
-extras_all=(galculator mousepad firefox)
+files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk3 gtk4 gtklock gtksourceview dbus)
+extras_all=(gtk galculator mousepad firefox)
 
 verbose=0
 force=0
@@ -197,6 +198,29 @@ display_module_active_color #e5484d
 display_module_inactive_color #7a5a5e
 EOF
   echo "galculator: display colours set."
+}
+
+install_gtk() {
+  local schema=org.gnome.desktop.interface key value failed=0
+  if ! gsettings writable $schema gtk-theme >/dev/null 2>&1; then
+    echo "gtk: schema $schema not found (is gsettings-desktop-schemas installed?); skipped." >&2
+    return
+  fi
+  # GTK on Wayland takes these from GSettings, not settings.ini.
+  while read -r key value; do
+    gsettings set $schema "$key" "$value" 2>/dev/null || true
+    [ "$(gsettings get $schema "$key" 2>/dev/null)" = "'$value'" ] || failed=1
+  done <<'EOF'
+gtk-theme OB-Crimson-Dark
+icon-theme Adwaita
+color-scheme prefer-dark
+EOF
+  if [ $failed -eq 0 ]; then
+    echo "gtk: theme set to OB-Crimson-Dark, dark style preferred."
+  else
+    echo "gtk: couldn't save the GTK theme settings (no D-Bus session yet?)." >&2
+    echo "     Log out and in again, then run: ./install.sh gtk" >&2
+  fi
 }
 
 install_mousepad() {

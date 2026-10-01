@@ -77,24 +77,26 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 
 | Keys | Action |
 |---|---|
-| `W-f` | `firefox` |
+| `W-h` | Toggle maximize |
+| `W-j` | Close focused window |
+| `W-k` | `fuzzel` (app launcher) |
+| `W-l` | `gtklock` (lock; `~/.config/gtklock/style.css` draws `~/Pictures/wallpaper.png` scaled and cropped to fill each screen, portrait ones too, or `#1f1416` if there's no wallpaper) |
+| `W-semicolon` | `nautilus` (Files) |
 | `W-Return` | `alacritty` (terminal) |
+| `W-g` | `google-chrome` (not installed by `install-packages.sh`) |
+| `W-n` | `wdisplays` (display settings) |
+| `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
 | `XF86Calculator` | `galculator` |
 | `XF86MonBrightnessUp` | `brightnessctl set +5%` |
 | `XF86MonBrightnessDown` | `brightnessctl set 5%-` |
-| `W-q` | Close focused window |
-| `W-s` | `slack` (not installed by `install-packages.sh`) |
-| `W-l` | `swaylock -i ~/Pictures/wallpaper.png` (lock, wallpaper as background; plain grey `#a3a3a3`, swaylock's default, if there's no wallpaper) |
-| `W-g` | `google-chrome` (not installed by `install-packages.sh`) |
-| `W-t` | `nautilus` (Files) |
-| `W-n` | `wdisplays` (display settings) |
-| `W-m` | Toggle maximize |
-| `W-c` | `gnome-clocks` (dark, see 6.1) |
-| `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
-| `W-k` | `fuzzel` (app launcher) |
-| `C-A-BackSpace` | Exit labwc |
 
-All but the brightness keys, `W-q` and `C-A-BackSpace` fire on key release
+The main bindings sit under the right hand's home row (`h j k l ;` plus
+`Return`), so the desktop can be driven from the keyboard without moving that
+hand. Everything else (Firefox, Clocks, Mousepad, Volume Control, ...) is
+launched from fuzzel (`W-k`) rather than given its own key. Key names are xkb
+keysym names, so `;` is written `semicolon`.
+
+All but the brightness keys and `W-j` fire on key release
 (`onRelease="yes"`).
 
 Window theme is set with `<theme><name>OB-Crimson-Dark</name></theme>`.
@@ -105,8 +107,8 @@ The whole desktop uses one palette, **Crimson Dark**: red-tinted near-black
 surfaces, warm off-white text, and crimson as the single accent (borders,
 focus, selection, hover). Every themed component — window chrome, terminal,
 launcher, bar, Firefox (6.5), Volume Control (6.2), and the Nautilus /
-Mousepad / galculator / Clocks windows (6.4) — uses it. LibreOffice is
-deliberately left stock.
+Mousepad / galculator / Clocks windows (6.4) — uses it, and so does every
+other GTK app (6.6), LibreOffice and the gtklock lock screen included.
 
 | Role | Hex |
 |---|---|
@@ -297,16 +299,17 @@ with `pavucontrol`, NetworkManager and `blueman` instead.
 | Calculator | galculator (Crimson Dark, see 6.4) |
 | Audio mixer | pavucontrol (Crimson Dark, see 6.2) |
 | Bluetooth | blueman (forced dark, see 6.2) |
-| Office | LibreOffice (stock theme, deliberately unthemed) |
+| Office | LibreOffice (Crimson Dark via the global GTK3 theme, see 6.6) |
 | Media | VLC |
 | Clock | GNOME Clocks (forced dark, see 6.1; picks up Crimson Dark, see 6.4) |
 | Screenshots | grim + slurp |
 | System info | fastfetch (runs at the end of `~/.bashrc`) |
 
-No GTK settings files exist (`~/.config/gtk-3.0` is empty), so GTK apps follow
-GNOME defaults: **Adwaita, light**. The desktop is dark only where configured
-below; libadwaita apps are light unless overridden. Nothing global is set on
-purpose, so that LibreOffice (which draws with GTK3) keeps its stock look.
+The GTK theme is set globally to **OB-Crimson-Dark** with the dark style
+preferred (6.6), so every GTK3 and plain GTK4 app, and every libadwaita app,
+starts in Crimson Dark however it's launched. The per-app overrides below
+predate that and are kept as a second line of defence (e.g. if the GSettings
+keys couldn't be saved).
 
 ### 6.1 GNOME Clocks dark mode
 
@@ -326,9 +329,9 @@ theme, not libadwaita's dark style). Alternative for the whole desktop:
 The launcher isn't the only way Clocks starts, so two more places set the
 variable too:
 
-- The `W-c` keybind in `rc.xml` runs
-  `env ADW_DEBUG_COLOR_SCHEME=prefer-dark gnome-clocks`. A bare `gnome-clocks`
-  there opens light.
+- Any keybind added for it must run
+  `env ADW_DEBUG_COLOR_SCHEME=prefer-dark gnome-clocks` (there's none by
+  default; Clocks is opened from fuzzel, which uses the launcher above).
 - Clocks is also D-Bus-started (e.g. to ring alarms), which runs
   `/usr/share/dbus-1/services/org.gnome.clocks.service` without the variable.
   `~/.local/share/dbus-1/services/org.gnome.clocks.service` overrides it (same
@@ -352,8 +355,8 @@ copied from `/usr/share/applications/` with `Exec` prefixed:
 | Override file | Exec |
 |---|---|
 | `org.pulseaudio.pavucontrol.desktop` | `env GTK_THEME=OB-Crimson-Dark pavucontrol` |
-| `blueman-manager.desktop` | `env GTK_THEME=Adwaita:dark blueman-manager` |
-| `blueman-adapters.desktop` | `env GTK_THEME=Adwaita:dark blueman-adapters` |
+| `blueman-manager.desktop` | `env GTK_THEME=OB-Crimson-Dark blueman-manager` |
+| `blueman-adapters.desktop` | `env GTK_THEME=OB-Crimson-Dark blueman-adapters` |
 
 Why `GTK_THEME` here but `ADW_DEBUG_COLOR_SCHEME` for Clocks (6.1): pavucontrol
 6.2 is plain **GTK4 without libadwaita** and Blueman 2.4 is **GTK3**, so the
@@ -386,11 +389,10 @@ bitmaps. The generator needs `python3-gobject`.
 
 Caveats:
 - Launching from a terminal (`pavucontrol`, `blueman-manager`) bypasses the
-  override. Prefix with `GTK_THEME=OB-Crimson-Dark` (pavucontrol) or
-  `GTK_THEME=Adwaita:dark` (Blueman) there too.
+  override, but the global theme (6.6) still applies.
 - `blueman-applet` is not started (labwc does not run `/etc/xdg/autostart`).
   If you add it to `autostart`, launch it as
-  `env GTK_THEME=Adwaita:dark blueman-applet &` so windows it spawns inherit the
+  `env GTK_THEME=OB-Crimson-Dark blueman-applet &` so windows it spawns inherit the
   variable.
 - A global alternative for all GTK3 apps is
   `~/.config/gtk-3.0/settings.ini` with `gtk-application-prefer-dark-theme=1`,
@@ -489,7 +491,7 @@ notebook > header { background-color: #140c0d; }
 ### 6.4 Crimson Dark for Nautilus, Mousepad and galculator
 
 Each app gets the section 4 palette through whatever its toolkit reads, scoped
-so nothing else changes (in particular, **LibreOffice stays stock**):
+(the global settings in 6.6 now cover these too):
 
 | App | Toolkit | Mechanism |
 |---|---|---|
@@ -577,8 +579,8 @@ syntax highlighting uses it too.
 A GTK3 theme lives alongside the labwc theme, in the same directory:
 `~/.local/share/themes/OB-Crimson-Dark/gtk-3.0/gtk.css`. It imports GTK's
 built-in Adwaita dark and recolours it. It is **only** applied through
-`GTK_THEME` on these two launchers, never globally, so other GTK3 apps
-(LibreOffice, sfwbar, Blueman) are unaffected.
+`GTK_THEME` on these two launchers, and globally since 6.6 (sfwbar's own
+CSS still wins for the bar).
 
 Launcher overrides in `~/.local/share/applications/`, copied from
 `/usr/share/applications/` with `Exec` prefixed:
@@ -1033,6 +1035,34 @@ menupopup menuitem[_moz-menuactive], menupopup menu[_moz-menuactive] {
 }
 ```
 
+### 6.6 Global GTK theme
+
+Every GTK app follows one theme, so nothing has to be themed launcher by
+launcher. `install.sh gtk` sets (GTK on Wayland reads these from GSettings,
+through the settings portal, and ignores `settings.ini` for them):
+
+```
+gsettings set org.gnome.desktop.interface gtk-theme OB-Crimson-Dark
+gsettings set org.gnome.desktop.interface icon-theme Adwaita
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+```
+
+`~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` carry
+the same three values for apps started without a D-Bus session.
+
+- GTK3 apps (Mousepad, galculator, Blueman, LibreOffice, gtklock) load
+  `OB-Crimson-Dark/gtk-3.0/gtk.css`.
+- Plain GTK4 apps (pavucontrol) load `OB-Crimson-Dark/gtk-4.0/gtk-dark.css`
+  when dark is preferred, **not** `gtk.css`; without it they fall back to
+  GTK's blue default dark. It only imports `gtk.css`.
+- libadwaita apps ignore `gtk-theme` but follow `color-scheme`, so they run
+  dark and pick up `~/.config/gtk-4.0/gtk.css` (6.4).
+- sfwbar is GTK3 too; its own CSS in `sfwbar.config` sets the bar's colours.
+
+Verified by screenshot on 2026-10-01 in a headless nested labwc, each app
+started directly (no launcher): gtklock, Mousepad, Blueman, pavucontrol and
+LibreOffice all render in the palette.
+
 ## 7. Packages
 
 Only packages that define this desktop. (The machine also carries ~180 base
@@ -1040,7 +1070,7 @@ Fedora Asahi packages: firmware, filesystems, network, kernel, etc.; install via
 the Asahi Remix image, not from this list.)
 
 ```
-labwc sfwbar fuzzel alacritty swaybg swaylock grim slurp wl-clipboard wlr-randr wdisplays
+labwc sfwbar fuzzel alacritty swaybg gtklock grim slurp wl-clipboard wlr-randr wdisplays
 brightnessctl xorg-x11-server-Xwayland
 firefox chromium nautilus mousepad galculator pavucontrol blueman libreoffice vlc gnome-clocks
 jetbrains-mono-fonts-all fastfetch mako
@@ -1127,8 +1157,10 @@ dotfiles/
   sfwbar/.config/sfwbar/sfwbar.config
   fuzzel/.config/fuzzel/fuzzel.ini
   alacritty/.config/alacritty/alacritty.toml
-  themes/.local/share/themes/OB-Crimson-Dark/{labwc/themerc,gtk-3.0/gtk.css,gtk-4.0/gtk.css}
-  gtk4/.config/gtk-4.0/gtk.css
+  themes/.local/share/themes/OB-Crimson-Dark/{labwc/themerc,gtk-3.0/gtk.css,gtk-4.0/{gtk,gtk-dark}.css}
+  gtk3/.config/gtk-3.0/settings.ini
+  gtklock/.config/gtklock/style.css
+  gtk4/.config/gtk-4.0/{gtk.css,settings.ini}
   gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml
   dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service
   dbus/.local/share/dbus-1/services/org.gnome.clocks.service
@@ -1159,7 +1191,7 @@ It then handles the pieces that aren't plain files: it copies the Firefox
 stylesheets into the profile named by `profiles.ini` and merges `user.js`
 (the profile directory name is random), writes galculator's five colour keys
 into its existing config (galculator rewrites that file on exit), and sets
-Mousepad's `gsettings` key.
+Mousepad's `gsettings` key and the global GTK keys (6.6).
 
 ## 11. Rebuild checklist
 
@@ -1174,4 +1206,4 @@ Mousepad's `gsettings` key.
    `./install.sh`, which does steps 4–5).
 6. Start `labwc`; confirm: bar appears, `W-k` opens fuzzel, Bluetooth Devices
    opens dark; Files, Mousepad, galculator, Clocks, Volume Control and Firefox
-   open crimson; LibreOffice opens stock; `W-p` copies a region screenshot to the clipboard.
+   open crimson; LibreOffice and the `W-l` lock screen are crimson too; `W-p` copies a region screenshot to the clipboard.

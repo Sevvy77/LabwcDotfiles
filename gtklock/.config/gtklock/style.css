@@ -1,0 +1,16 @@
+/* gtklock (W-l), loaded automatically from ~/.config/gtklock/. The colours
+   come from the global OB-Crimson-Dark GTK theme; this only sets the
+   background.
+
+   The wallpaper is drawn here instead of with gtklock's -b option, which
+   stretches it to the screen and distorts it on portrait monitors. "cover"
+   scales and crops it like the desktop's swaybg -m fill. The path is relative
+   to this file, so it is ~/Pictures/wallpaper.png; without one, the plain
+   colour shows (the same one the desktop falls back to). */
+window {
+  background-color: #1f1416;
+  background-image: url("../../Pictures/wallpaper.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

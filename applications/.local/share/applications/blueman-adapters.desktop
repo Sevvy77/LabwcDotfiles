@@ -91,7 +91,7 @@ Comment[zh_CN]=设置蓝牙适配器属性
 Comment[zh_TW]=設定藍牙接收器屬性
 Comment[oc]=Definir las proprietats de l'adaptator Bluetooth
 Comment=Set Bluetooth Adapter Properties
-Exec=env GTK_THEME=Adwaita:dark blueman-adapters
+Exec=env GTK_THEME=OB-Crimson-Dark blueman-adapters
 Icon=blueman-device
 Terminal=false
 Type=Application

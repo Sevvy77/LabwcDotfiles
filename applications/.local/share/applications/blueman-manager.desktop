@@ -77,7 +77,7 @@ Comment[zh_TW]=Blueman 藍牙管理器
 Comment[oc]=Gestionari Bluetooth Blueman
 Comment=Blueman Bluetooth Manager
 Icon=blueman
-Exec=env GTK_THEME=Adwaita:dark blueman-manager
+Exec=env GTK_THEME=OB-Crimson-Dark blueman-manager
 Terminal=false
 Type=Application
 StartupNotify=true
