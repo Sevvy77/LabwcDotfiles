@@ -1072,6 +1072,9 @@ that has no icons of its own and only sets
   widgets use, and its own fallback is the old `gnome` icon theme that
   current distros don't ship, so those come from Adwaita;
 - without Wine installed at all, everything comes from Adwaita.
+- `Directories=` lists one placeholder (`16x16/apps`, which doesn't exist):
+  fuzzel 1.14, Fedora 44's version, segfaults on an icon theme whose list is
+  empty, so it wouldn't open at all (found 2026-10-01; 1.15 is fine).
 
 fuzzel doesn't read GTK settings, so `fuzzel.ini` sets `icon-theme=Crimson-Wine`
 itself. Verified 2026-10-01 against a scratch build of gnome-wine 5.5.6:

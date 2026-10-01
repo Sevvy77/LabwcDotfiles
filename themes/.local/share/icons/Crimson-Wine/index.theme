@@ -4,9 +4,17 @@
 # the old "gnome" icon theme, which current distros no longer ship, so
 # anything it lacks (notably the -symbolic icons GTK3/4 widgets use) comes
 # from Adwaita instead of showing as a missing-icon placeholder.
+#
+# Directories must list at least one entry: fuzzel 1.14 (Fedora 44)
+# segfaults on an empty list. The directory doesn't need to exist.
 [Icon Theme]
 Name=Crimson Wine
 Comment=GNOME-Colors Wine with Adwaita fallbacks
 Inherits=gnome-wine,gnome-colors-wine,Adwaita,AdwaitaLegacy,hicolor
 Example=folder
-Directories=
+Directories=16x16/apps
+
+[16x16/apps]
+Size=16
+Type=Fixed
+Context=Applications
