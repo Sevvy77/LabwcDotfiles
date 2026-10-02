@@ -1,0 +1,11 @@
+# Started by labwc's autostart and stopped by its shutdown script. labwc
+# doesn't start graphical-session.target itself (from a TTY or from GDM), and
+# user services that need a running desktop wait for it, among them
+# xdg-desktop-portal, which libadwaita apps such as Nautilus ask whether to
+# be dark. graphical-session.target can't be started by hand, so this pulls
+# it in.
+[Unit]
+Description=labwc session
+BindsTo=graphical-session.target
+Wants=graphical-session-pre.target
+After=graphical-session-pre.target

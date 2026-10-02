@@ -1,0 +1,4 @@
+# Run by labwc (with sh) when it exits. Stop the desktop session's services
+# (xdg-desktop-portal and labwc-session.target go with it), so the next login
+# starts them again with the new display.
+systemctl --user stop graphical-session.target

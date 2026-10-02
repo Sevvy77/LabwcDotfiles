@@ -6,6 +6,16 @@
 #   wlr-randr --output eDP-1 --scale 1.4
 [ -f ~/.config/labwc/autostart.local ] && . ~/.config/labwc/autostart.local
 
+# Give user services the display, then start the session target (see
+# ~/.config/systemd/user/labwc-session.target). Without it xdg-desktop-portal
+# never starts, and libadwaita apps such as Nautilus come up light.
+if command -v dbus-update-activation-environment >/dev/null; then
+  dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+else
+  systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+fi
+systemctl --user start labwc-session.target
+
 # Wallpaper: ~/Pictures/wallpaper.png if there is one, else the theme colour.
 if [ -f ~/Pictures/wallpaper.png ]; then
   swaybg -i ~/Pictures/wallpaper.png -m fill &

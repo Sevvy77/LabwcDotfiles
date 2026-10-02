@@ -37,7 +37,7 @@ manifest=$state_dir/installed
 # Fedora and chromium on Arch and Debian.
 spotify_src=applications/.local/share/applications/spotify-web.desktop
 
-files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk3 gtk4 gtklock gtksourceview dbus)
+files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
 extras_all=(gtk galculator mousepad firefox)
 
 verbose=0
@@ -292,6 +292,8 @@ update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 # Let the session bus see the D-Bus overrides (Nautilus, Clocks) without logging out.
 busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
   org.freedesktop.DBus ReloadConfig >/dev/null 2>&1 || true
+# Let the user's systemd see labwc-session.target.
+systemctl --user daemon-reload >/dev/null 2>&1 || true
 
 cat <<EOF
 To start the desktop:

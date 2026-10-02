@@ -41,7 +41,8 @@ This is *not* a GNOME session. GNOME apps (Nautilus, Clocks) run inside labwc.
      `[ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ] && exec labwc`
    - A display manager (GDM, SDDM) works too: the labwc package installs a
      `labwc` session in `/usr/share/wayland-sessions/`.
-3. labwc reads `~/.config/labwc/{environment,autostart,rc.xml}`.
+3. labwc reads `~/.config/labwc/{environment,autostart,rc.xml}`, and runs
+   `~/.config/labwc/shutdown` when it exits.
 
 ### 2.1 `labwc/environment`
 
@@ -59,16 +60,24 @@ In order:
 1. Sources `~/.config/labwc/autostart.local` if it exists: per-machine
    settings, not in the repo. **This machine's** contains
    `wlr-randr --output eDP-1 --scale 1.4` (output scale 1.4).
-2. `swaybg -i ~/Pictures/wallpaper.png -m fill &` if that file exists,
+2. Passes `WAYLAND_DISPLAY` and `XDG_CURRENT_DESKTOP` to user services
+   (`dbus-update-activation-environment --systemd`, or
+   `systemctl --user import-environment` without it), then
+   `systemctl --user start labwc-session.target` (section 6.6).
+3. `swaybg -i ~/Pictures/wallpaper.png -m fill &` if that file exists,
    otherwise `swaybg -c '#1f1416' &` (the theme's background colour). Here the
    wallpaper is a copy of a personal image, 1672x941. **The wallpaper file is
    a personal asset and is not part of this spec or the repo**; substitute
    any image.
-3. The MATE polkit agent (password prompts for blueman, Nautilus mounts),
+4. The MATE polkit agent (password prompts for blueman, Nautilus mounts),
    from `/usr/libexec/` or `/usr/lib/mate-polkit/` depending on the distro.
-4. `sfwbar &`, `alacritty &`, and `firefox &` (or `firefox-esr` on Debian).
+5. `sfwbar &`, `alacritty &`, and `firefox &` (or `firefox-esr` on Debian).
 
 Behaviour: the bar, a terminal and Firefox open at login.
+
+`labwc/shutdown` runs `systemctl --user stop graphical-session.target`, which
+also stops `labwc-session.target` and xdg-desktop-portal, so the next login
+starts them with the new display.
 
 ## 3. Keybindings (`labwc/rc.xml`)
 
@@ -1061,6 +1070,16 @@ Reproduced in a Fedora 44 container installed without weak dependencies:
 plain `nautilus` opens light, and dark once the package is installed (log
 out and back in, or restart xdg-desktop-portal, after installing it).
 
+The portal also needs a running session: `xdg-desktop-portal.service` has
+`Requisite=graphical-session.target`, which labwc never starts (from a TTY or
+from GDM), and which can't be started by hand. Without it the portal fails
+with "Dependency failed" and every libadwaita app opens light, even with the
+GTK backend installed. `systemd/.config/systemd/user/labwc-session.target`
+(`BindsTo=graphical-session.target`) is started by `autostart` (section 2.2)
+to pull it in. Verified on Fedora 44 (Asahi) on 2026-10-01: before, plain
+`nautilus` opened light; after, the portal reports `color-scheme` 1
+(prefer-dark) and Nautilus opens dark.
+
 - GTK3 apps (Mousepad, galculator, Blueman, LibreOffice, gtklock) load
   `OB-Crimson-Dark/gtk-3.0/gtk.css`.
 - Plain GTK4 apps (pavucontrol) load `OB-Crimson-Dark/gtk-4.0/gtk-dark.css`
@@ -1187,7 +1206,8 @@ Flatpak is not in use; no Flatpaks are installed.
 
 ```
 dotfiles/
-  labwc/.config/labwc/{environment,autostart,rc.xml}
+  labwc/.config/labwc/{environment,autostart,shutdown,rc.xml}
+  systemd/.config/systemd/user/labwc-session.target
   sfwbar/.config/sfwbar/sfwbar.config
   fuzzel/.config/fuzzel/fuzzel.ini
   alacritty/.config/alacritty/alacritty.toml
