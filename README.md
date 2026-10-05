@@ -49,8 +49,8 @@ Launch labwc:
 labwc
 ```
 
-Exit labwc from a shell with `labwc --exit`, or click on empty desktop space
-and choose Exit from the menu that pops up.
+Exit labwc from a shell with `labwc --exit`, click on empty desktop space
+and choose Exit from the menu that pops up, or press Ctrl+Alt+Delete.
 
 ## Layout
 
