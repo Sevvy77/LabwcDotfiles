@@ -47,6 +47,9 @@
     <keybind key="W-k" onRelease="yes">
       <action name="Execute" command="fuzzel" />
     </keybind>
+    <keybind key="C-A-Delete">
+      <action name="Exit" />
+    </keybind>
   </keyboard>
   <theme>
     <name>OB-Crimson-Dark</name>
