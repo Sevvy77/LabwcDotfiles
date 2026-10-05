@@ -8,6 +8,50 @@ Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
 or alongside an existing desktop.
 Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
+## Quick start
+
+Works on x86 or ARM, on Debian, Ubuntu, Arch, CachyOS and Fedora.
+
+Clone the repo into a `dotfiles` folder in your home directory:
+
+```sh
+git clone https://github.com/Sevvy77/LabwcDotfiles ~/dotfiles
+```
+
+Move into your new dotfiles directory:
+
+```sh
+cd ~/dotfiles
+```
+
+Run the automated package installer. Use `--dry-run` first if you'd like to
+see what it will install before anything changes:
+
+```sh
+./install-packages.sh --dry-run
+```
+
+then:
+
+```sh
+./install-packages.sh
+```
+
+Run the installer script to apply my configs and theming:
+
+```sh
+./install.sh
+```
+
+Launch labwc:
+
+```sh
+labwc
+```
+
+Exit labwc from a shell with `labwc --exit`, or click on empty desktop space
+and choose Exit from the menu that pops up.
+
 ## Layout
 
 Each top-level directory holds config files laid out relative to `$HOME`,
