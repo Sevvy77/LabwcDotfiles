@@ -1,3 +1,5 @@
+![Crimson Dark desktop](screenshot.png)
+
 # dotfiles
 
 labwc + sfwbar + fuzzel + alacritty, themed **Crimson Dark** throughout (window
