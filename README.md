@@ -14,6 +14,10 @@ Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
 Works on x86 or ARM, on Debian, Ubuntu, Arch, CachyOS and Fedora.
 
+Before you start, copy the wallpaper you want to `~/Pictures/wallpaper.png`.
+labwc picks it up when it launches, so you won't have to exit and re-launch
+it later to get your wallpaper.
+
 Clone the repo into a `dotfiles` folder in your home directory:
 
 ```sh
