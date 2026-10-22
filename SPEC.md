@@ -82,7 +82,7 @@ starts them with the new display.
 ## 3. Keybindings (`labwc/rc.xml`)
 
 `<keyboard><default /></keyboard>` keeps labwc's built-in bindings; these are
-added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
+added on top. `W` = Super, `C` = Ctrl, `S` = Shift, `A` = Alt.
 
 | Keys | Action |
 |---|---|
@@ -95,6 +95,7 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 | `W-n` | `wdisplays` (display settings) |
 | `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
 | `W-C-j` / `W-C-k` / `W-C-l` / `W-C-semicolon` | Go to workspace 1 / 2 / 3 / 4 |
+| `W-C-S-j` / `W-C-S-k` / `W-C-S-l` / `W-C-S-semicolon` | Send the focused window to workspace 1 / 2 / 3 / 4, and follow it there |
 | `XF86Calculator` | `galculator` |
 | `XF86MonBrightnessUp` | `brightnessctl set +5%` |
 | `XF86MonBrightnessDown` | `brightnessctl set 5%-` |
@@ -109,8 +110,8 @@ There are four workspaces, named `1` to `4` in `<desktops><names>` so the
 bar's pager shows short labels (see 5). Switching between them
 uses the same four home-row keys as the main bindings, with Ctrl added
 (`W-C-j` is workspace 1 through `W-C-semicolon` for workspace 4). A workspace
-covers every display at once. There's no key to send a window to another
-workspace; use the window menu for that.
+covers every display at once. Adding Shift sends the focused window to that
+workspace instead, and switches there with it (labwc's default `follow="yes"`).
 
 All but the brightness keys, `W-j` and the workspace keys fire on key release
 (`onRelease="yes"`).
