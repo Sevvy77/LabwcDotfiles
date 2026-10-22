@@ -1,5 +1,14 @@
 <labwc_config>
-  <desktops number="4" />
+  <!-- Named rather than numbered, so sfwbar's pager shows "1" instead of
+       "Workspace 1" -->
+  <desktops>
+    <names>
+      <name>1</name>
+      <name>2</name>
+      <name>3</name>
+      <name>4</name>
+    </names>
+  </desktops>
   <keyboard>
     <default />
     <!-- The W- prefix refers to the Super key -->

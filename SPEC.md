@@ -105,7 +105,8 @@ hand. Everything else (Firefox, Clocks, Mousepad, Volume Control, ...) is
 launched from fuzzel (`W-k`) rather than given its own key. Key names are xkb
 keysym names, so `;` is written `semicolon`.
 
-There are four workspaces (`<desktops number="4" />`). Switching between them
+There are four workspaces, named `1` to `4` in `<desktops><names>` so the
+bar's pager shows short labels (see 5). Switching between them
 uses the same four home-row keys as the main bindings, with Ctrl added
 (`W-C-j` is workspace 1 through `W-C-semicolon` for workspace 4). A workspace
 covers every display at once. There's no key to send a window to another
@@ -272,11 +273,15 @@ before (verified by screenshot).
 **Layout, left to right:**
 
 1. Clock: `Time("%H:%M")`, click pops up the `cal.widget` calendar
-2. Taskbar: one row, icons + labels, grouped by app, sorted, stretches to fill.
+2. Pager: labwc's four workspaces as buttons labelled `1`–`4`; the current
+   one is highlighted, click to switch. No previews (`preview = false`).
+   labwc doesn't tell clients which workspace a window is on, so the taskbar
+   can't be filtered per workspace and lists every window.
+3. Taskbar: one row, icons + labels, grouped by app, sorted, stretches to fill.
    Right-click opens the `winops` menu, middle-click closes, drag focuses.
-3. `cpu.widget` (chart), `memory.widget` (bar); clicking either opens `top`
+4. `cpu.widget` (chart), `memory.widget` (bar); clicking either opens `top`
    in `$Term` (`alacritty`), which is why `Set Term` stays in the config
-4. System tray
+5. System tray
 
 **Other behaviour:** the config keeps a `switcher` section (icons only,
 5 columns, 700ms) even though nothing on labwc opens sfwbar's switcher:
@@ -287,7 +292,7 @@ labwc, which places new windows itself. No icon theme is set here, so the bar
 uses the GTK one (Crimson-Wine, 6.6).
 
 **Styling:** `theme_text_color #E8D5D0`, `theme_bg_color #140C0D`,
-`theme_fg_color`/`borders #C0303A`. Taskbar items are rounded (4px) on a
+`theme_fg_color`/`borders #C0303A`. Taskbar and pager items are rounded (4px) on a
 `rgba(192,48,58,0.12)` fill (faint crimson), hover `rgba(229,72,77,0.25)`; the
 **focused** item is solid crimson `#C0303A` with light `#F5E9E6` label.
 CPU chart line and memory bar fill are
