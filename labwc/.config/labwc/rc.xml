@@ -1,5 +1,5 @@
-<?xml version="1.0" ?>
 <labwc_config>
+  <desktops number="4" />
   <keyboard>
     <default />
     <!-- The W- prefix refers to the Super key -->
@@ -27,9 +27,6 @@
     <keybind key="W-l" onRelease="yes">
       <action name="Execute" command="gtklock" />
     </keybind>
-    <keybind key="W-g" onRelease="yes">
-      <action name="Execute" command="google-chrome" />
-    </keybind>
     <keybind key="W-semicolon" onRelease="yes">
       <action name="Execute" command="nautilus" />
     </keybind>
@@ -49,6 +46,18 @@
     </keybind>
     <keybind key="C-A-Delete">
       <action name="Exit" />
+    </keybind>
+    <keybind key="W-C-j">
+      <action name="GoToDesktop" to="1" />
+    </keybind>
+    <keybind key="W-C-k">
+      <action name="GoToDesktop" to="2" />
+    </keybind>
+    <keybind key="W-C-l">
+      <action name="GoToDesktop" to="3" />
+    </keybind>
+    <keybind key="W-C-semicolon">
+      <action name="GoToDesktop" to="4" />
     </keybind>
   </keyboard>
   <theme>

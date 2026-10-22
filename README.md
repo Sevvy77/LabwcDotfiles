@@ -82,7 +82,7 @@ gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad 
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
 dbus/.local/share/dbus-1/services/org.gnome.clocks.service           # dark Clocks when D-Bus-started (alarms)
 applications/.local/share/applications/*.desktop   # theme overrides + custom launchers
-bash/.bashrc
+bash/.bashrc.d/crimson-dotfiles.sh   # fastfetch, ~/.local/bin on PATH (sourced from your ~/.bashrc)
 install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt)
 install.sh
 update.sh             # pull from GitHub, then install over your configs (install.sh --force)
@@ -160,9 +160,11 @@ it installed (in `~/.local/state/crimson-dotfiles/`), and on a re-run:
 `--force` replaces files that differ with the repo's version, keeping yours
 as `<file>.bak`.
 
-The one exception is a `~/.bashrc` that is still the distro's stock copy
-from `/etc/skel` (as on a new install): it's moved to `~/.bashrc.skel`,
-which this repo's `.bashrc` sources, so you keep your distro's defaults.
+Your `~/.bashrc` is never replaced. The repo's bash settings live in
+`~/.bashrc.d/crimson-dotfiles.sh`, and `install.sh` adds one line to the end
+of `~/.bashrc` that sources it (once; re-runs don't add it again). If an
+earlier version of the script had replaced your `.bashrc` and moved the
+distro's to `~/.bashrc.skel`, the distro's is put back.
 
 Installs made by earlier versions of this script symlinked files into the
 repo; a re-run replaces those symlinks with copies.

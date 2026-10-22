@@ -131,16 +131,41 @@ place() {
   return 0
 }
 
+# Every supported distro gives a new account its own ~/.bashrc, so it's kept
+# and only gets one line added, sourcing ~/.bashrc.d/crimson-dotfiles.sh.
+bashrc_line='[ -f ~/.bashrc.d/crimson-dotfiles.sh ] && . ~/.bashrc.d/crimson-dotfiles.sh'
+install_bashrc_line() {
+  local rc=$HOME/.bashrc skel=$HOME/.bashrc.skel
+  # Earlier versions of this script installed the repo's own .bashrc (first as
+  # a symlink, then as a copy) and moved the distro's to ~/.bashrc.skel. Put
+  # the distro's back if ours hasn't been edited; drop its fastfetch line if
+  # it has, since crimson-dotfiles.sh runs fastfetch now.
+  if [ -L "$rc" ] && [[ $(readlink -f "$rc") == "$repo"/* ]]; then
+    rm "$rc"
+    [ -f "$skel" ] && mv "$skel" "$rc"
+    echo "  (~/.bashrc: replaced the link into this repo with your distro's own)"
+  elif [ -n "${baseline[$rc]:-}" ] && [ -f "$rc" ]; then
+    if [ "$(sha "$rc")" = "${baseline[$rc]}" ] && [ -f "$skel" ]; then
+      mv "$skel" "$rc"
+      echo "  (~/.bashrc: put your distro's own back from ~/.bashrc.skel)"
+    elif grep -qx fastfetch "$rc"; then
+      sed -i '/^fastfetch$/d' "$rc"
+    fi
+  fi
+  unset 'baseline[$rc]'
+  if [ ! -e "$rc" ] && [ -f /etc/skel/.bashrc ]; then
+    cp /etc/skel/.bashrc "$rc"
+  fi
+  if ! grep -qxF "$bashrc_line" "$rc" 2>/dev/null; then
+    printf '\n# Crimson Dark dotfiles\n%s\n' "$bashrc_line" >> "$rc"
+    echo "  (~/.bashrc: added a line sourcing ~/.bashrc.d/crimson-dotfiles.sh)"
+  fi
+}
+
 if [ ${#groups[@]} -gt 0 ]; then
   echo "Copying config files into $HOME:"
-  # A new account's ~/.bashrc is just the distro's stock copy from /etc/skel.
-  # Move it to ~/.bashrc.skel, which this repo's .bashrc sources, so the
-  # distro's defaults are kept.
-  if [[ " ${groups[*]} " == *" bash "* ]] && [ -f "$HOME/.bashrc" ] &&
-     [ ! -L "$HOME/.bashrc" ] && [ -f /etc/skel/.bashrc ] &&
-     [ "$(<"$HOME/.bashrc")" = "$(</etc/skel/.bashrc)" ]; then
-    mv "$HOME/.bashrc" "$HOME/.bashrc.skel"
-    echo "  (your ~/.bashrc was the distro's stock one; moved to ~/.bashrc.skel)"
+  if [[ " ${groups[*]} " == *" bash "* ]]; then
+    install_bashrc_line
   fi
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT

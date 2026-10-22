@@ -26,7 +26,7 @@ pre-change configs were backed up locally first.
 | Panel | **sfwbar 1.0~beta16** |
 | Launcher | **fuzzel 1.14** |
 | Terminal | **alacritty 0.17** |
-| Shell | bash (Fedora default `.bashrc`, plus `fastfetch` on every interactive shell) |
+| Shell | bash (the distro's own `.bashrc`, plus `~/.bashrc.d/crimson-dotfiles.sh`: `fastfetch` on every interactive shell) |
 | Audio | PipeWire + WirePlumber + pipewire-pulse (Fedora default, user units) |
 | Default target | `multi-user.target` — **no display manager** |
 
@@ -92,9 +92,9 @@ added on top. `W` = Super, `C` = Ctrl, `A` = Alt.
 | `W-l` | `gtklock` (lock; `~/.config/gtklock/style.css` draws `~/Pictures/wallpaper.png` scaled and cropped to fill each screen, portrait ones too, or `#1f1416` if there's no wallpaper) |
 | `W-semicolon` | `nautilus` (Files) |
 | `W-Return` | `alacritty` (terminal) |
-| `W-g` | `google-chrome` (not installed by `install-packages.sh`) |
 | `W-n` | `wdisplays` (display settings) |
 | `W-p` | Region screenshot to the clipboard: `grim -g "$(slurp)" - \| wl-copy` |
+| `W-C-j` / `W-C-k` / `W-C-l` / `W-C-semicolon` | Go to workspace 1 / 2 / 3 / 4 |
 | `XF86Calculator` | `galculator` |
 | `XF86MonBrightnessUp` | `brightnessctl set +5%` |
 | `XF86MonBrightnessDown` | `brightnessctl set 5%-` |
@@ -105,7 +105,13 @@ hand. Everything else (Firefox, Clocks, Mousepad, Volume Control, ...) is
 launched from fuzzel (`W-k`) rather than given its own key. Key names are xkb
 keysym names, so `;` is written `semicolon`.
 
-All but the brightness keys and `W-j` fire on key release
+There are four workspaces (`<desktops number="4" />`). Switching between them
+uses the same four home-row keys as the main bindings, with Ctrl added
+(`W-C-j` is workspace 1 through `W-C-semicolon` for workspace 4). A workspace
+covers every display at once. There's no key to send a window to another
+workspace; use the window menu for that.
+
+All but the brightness keys, `W-j` and the workspace keys fire on key release
 (`onRelease="yes"`).
 
 Window theme is set with `<theme><name>OB-Crimson-Dark</name></theme>`.
@@ -312,7 +318,7 @@ with `pavucontrol`, NetworkManager and `blueman` instead.
 | Media | VLC |
 | Clock | GNOME Clocks (forced dark, see 6.1; picks up Crimson Dark, see 6.4) |
 | Screenshots | grim + slurp |
-| System info | fastfetch (runs at the end of `~/.bashrc`) |
+| System info | fastfetch (run from `~/.bashrc.d/crimson-dotfiles.sh`) |
 
 The GTK theme is set globally to **OB-Crimson-Dark** with the dark style
 preferred (6.6), so every GTK3 and plain GTK4 app, and every libadwaita app,
@@ -1221,7 +1227,7 @@ dotfiles/
   applications/.local/share/applications/
     {org.gnome.clocks,org.pulseaudio.pavucontrol,blueman-manager,blueman-adapters,spotify-web,
      org.gnome.Nautilus,org.xfce.mousepad,galculator}.desktop
-  bash/.bashrc
+  bash/.bashrc.d/crimson-dotfiles.sh   # sourced by a line install.sh appends to ~/.bashrc
   firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # installed into the profile, see below
   scripts/gen-gtk4-crimson.py                                    # not installed (6.2)
   install-packages.sh   # section 7
@@ -1239,7 +1245,11 @@ records the repo version of each file it installed in
 updates files that are unchanged since, leaves edited ones alone with the
 repo's new version beside them as `<file>.new`, and never overwrites a file
 it didn't install unless given `--force` (which keeps a `.bak`). Symlinks
-into the repo left by earlier, Stow-based versions are replaced with copies.
+into the repo left by earlier, Stow-based versions are replaced with copies. `~/.bashrc` is
+the exception to copying: every supported distro ships its own, so it's kept
+and only gets one line appended that sources
+`~/.bashrc.d/crimson-dotfiles.sh` (a guard variable stops Fedora's own
+`~/.bashrc.d` loop running it twice).
 
 It then handles the pieces that aren't plain files: it copies the Firefox
 stylesheets into the profile named by `profiles.ini` and merges `user.js`
