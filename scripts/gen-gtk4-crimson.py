@@ -16,7 +16,7 @@ from gi.repository import Gio, Gtk  # noqa: F401  (importing Gtk registers its r
 SRC = "/org/gtk/libgtk/theme/Default/Default-dark.css"
 css = Gio.resources_lookup_data(SRC, 0).get_data().decode()
 
-# Exact anchors onto the palette (SPEC.md section 4).
+# Exact anchors onto the palette (header of themes/.local/share/themes/OB-Crimson-Dark/labwc/themerc).
 EXACT = {
     (0x15, 0x53, 0x9e): (0xc0, 0x30, 0x3a),  # selected / accent bg -> crimson
     (0x35, 0x84, 0xe4): (0xe5, 0x48, 0x4d),  # accent / links       -> accent hover

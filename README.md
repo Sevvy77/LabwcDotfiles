@@ -8,7 +8,6 @@ Clocks, Volume Control, lock screen and every other GTK app, LibreOffice
 included). Built on Fedora Asahi Remix; installs on Fedora,
 Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
 or alongside an existing desktop.
-Full writeup, including known gaps and rationale: [`SPEC.md`](SPEC.md).
 
 ## Quick start
 
@@ -197,7 +196,7 @@ changes and merge the repo's `.new` versions yourself.
   repo doesn't ship, so repo updates to `autostart` still apply cleanly.
   For example: `wlr-randr --output eDP-1 --scale 1.4`
 
-## Known gaps (see SPEC.md section 8 for details)
+## Known gaps
 
 - The Volume Control theme is generated from GTK 4.22's built-in stylesheet.
   After a GTK4 upgrade, re-run `scripts/gen-gtk4-crimson.py` (needs
