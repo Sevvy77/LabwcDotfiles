@@ -1,0 +1,16 @@
+# Crimson Dark (palette from OB-Crimson-Dark / alacritty / fuzzel)
+anchor=top-right
+
+background-color=#1f1416ee
+text-color=#e8d5d0ff
+border-color=#c0303aff
+progress-color=over #3a2226ff
+border-size=2
+
+[urgency=low]
+border-color=#2e1b1eff
+
+[urgency=critical]
+background-color=#2e1b1eee
+border-color=#e5484dff
+text-color=#f5e9e6ff

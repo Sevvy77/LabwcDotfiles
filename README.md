@@ -3,9 +3,9 @@
 # dotfiles
 
 labwc + sfwbar + fuzzel + alacritty, themed **Crimson Dark** throughout (window
-chrome, terminal, launcher, bar, Firefox, Nautilus, Mousepad, galculator,
-Clocks, Volume Control, lock screen and every other GTK app, LibreOffice
-included). Built on Fedora Asahi Remix; installs on Fedora,
+chrome, terminal, launcher, bar, notifications, Firefox, Nautilus, Mousepad,
+galculator, Clocks, Volume Control, lock screen and every other GTK app,
+LibreOffice included). Built on Fedora Asahi Remix; installs on Fedora,
 Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
 or alongside an existing desktop.
 
@@ -67,6 +67,7 @@ labwc/.config/labwc/{environment,autostart,rc.xml}
 sfwbar/.config/sfwbar/sfwbar.config
 fuzzel/.config/fuzzel/fuzzel.ini
 alacritty/.config/alacritty/alacritty.toml
+mako/.config/mako/config                           # notifications (crimson border; red for critical)
 themes/.local/share/icons/Crimson-Wine/index.theme   # red GNOME-Colors Wine icons + Adwaita fallbacks
 themes/.local/share/themes/OB-Crimson-Dark/
   labwc/themerc        # window theme
@@ -207,8 +208,9 @@ changes and merge the repo's `.new` versions yourself.
 - `bluez`, `network-module` and `volume` sfwbar widgets are commented out —
   re-enabling them on `sfwbar 1.0~beta16` deadlocks the bar (see the config
   file for the full explanation).
-- No idle/lock daemon and no notification daemon (`mako` is installed but not
-  started); add them to `autostart` if you want either.
+- No idle/lock daemon; add one to `autostart` if you want it. `mako`
+  (notifications) isn't in `autostart` either: D-Bus starts it on the first
+  notification.
 
 ## License
 

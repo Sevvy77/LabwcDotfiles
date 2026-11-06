@@ -37,7 +37,7 @@ manifest=$state_dir/installed
 # Fedora and chromium on Arch and Debian.
 spotify_src=applications/.local/share/applications/spotify-web.desktop
 
-files_all=(labwc sfwbar fuzzel alacritty themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
+files_all=(labwc sfwbar fuzzel alacritty mako themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
 extras_all=(gtk galculator mousepad firefox)
 
 verbose=0
