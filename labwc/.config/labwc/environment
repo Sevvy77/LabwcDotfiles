@@ -1,5 +1,5 @@
 XKB_DEFAULT_LAYOUT=us
 # Force applications to use Wayland natively
 XDG_SESSION_TYPE=wayland
-GDK_BACKEND=wayland
+GDK_BACKEND=wayland,x11
 QT_QPA_PLATFORM=wayland
