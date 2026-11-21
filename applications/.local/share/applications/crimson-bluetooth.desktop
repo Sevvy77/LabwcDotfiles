@@ -1,0 +1,14 @@
+# Opens bluetui in its own alacritty window, with window class
+# crimson-bluetooth so labwc window rules can match it. Opaque, unlike
+# normal terminals, so the text behind it doesn't show through.
+[Desktop Entry]
+Type=Application
+Name=Bluetooth
+GenericName=Bluetooth Manager
+Comment=Pair and connect Bluetooth devices (bluetui)
+Icon=bluetooth
+Exec=alacritty -o window.opacity=1 --class crimson-bluetooth --title "Bluetooth" -e bluetui
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=pair;headset;headphones;mouse;keyboard;controller;blueman;bluetui;
+StartupWMClass=crimson-bluetooth

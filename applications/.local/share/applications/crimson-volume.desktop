@@ -1,0 +1,14 @@
+# Opens wiremix in its own alacritty window, with window class
+# crimson-volume so labwc window rules can match it. Opaque, unlike
+# normal terminals, so the text behind it doesn't show through.
+[Desktop Entry]
+Type=Application
+Name=Volume Control
+GenericName=Volume Control
+Comment=Adjust volume, outputs and inputs (wiremix)
+Icon=multimedia-volume-control
+Exec=alacritty -o window.opacity=1 --class crimson-volume --title "Volume Control" -e wiremix
+Terminal=false
+Categories=AudioVideo;Audio;Mixer;Settings;
+Keywords=volume;sound;audio;mixer;speakers;headphones;microphone;output;input;pipewire;pavucontrol;wiremix;
+StartupWMClass=crimson-volume

@@ -1,0 +1,14 @@
+# Opens nmrs-tui in its own alacritty window, with window class
+# crimson-network so labwc window rules can match it. Opaque, unlike
+# normal terminals, so the text behind it doesn't show through.
+[Desktop Entry]
+Type=Application
+Name=Network
+GenericName=Network Manager
+Comment=Connect to Wi-Fi and manage network devices (nmrs-tui)
+Icon=network-wireless
+Exec=alacritty -o window.opacity=1 --class crimson-network --title "Network" -e nmrs-tui
+Terminal=false
+Categories=Settings;Network;
+Keywords=wifi;wi-fi;wireless;ethernet;internet;networkmanager;nmtui;nmrs;
+StartupWMClass=crimson-network

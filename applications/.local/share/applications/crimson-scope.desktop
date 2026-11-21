@@ -1,0 +1,15 @@
+# Opens audio-scope (scope-tui on whatever output is playing) in its own
+# alacritty window, with window class crimson-scope so labwc window rules can
+# match it. Opaque, unlike normal terminals, so the text behind it doesn't
+# show through.
+[Desktop Entry]
+Type=Application
+Name=Audio Scope
+GenericName=Oscilloscope
+Comment=Oscilloscope, vectorscope and spectrum of what's playing (scope-tui)
+Icon=audio-x-generic
+Exec=alacritty -o window.opacity=1 --class crimson-scope --title "Audio Scope" -e audio-scope
+Terminal=false
+Categories=AudioVideo;Audio;
+Keywords=scope;vectorscope;spectrum;visualizer;waveform;scope-tui;
+StartupWMClass=crimson-scope

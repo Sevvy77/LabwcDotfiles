@@ -74,7 +74,9 @@ fi
 sfwbar_tag=v1.0_beta16.1
 
 # What it's for | dnf name | pacman name | apt name
-# "a/b" means try a, then b. "-" means skip on that distro.
+# "a/b" means try a, then b. "-" means skip on that distro. "cargo:crate"
+# means build that crate with cargo if nothing before it is available (on
+# Arch, after the AUR): it's installed for your user only, in ~/.local/bin.
 packages='
 compositor         | labwc                    | labwc              | labwc
 login screen entry | labwc-session            | -                  | -
@@ -102,13 +104,16 @@ terminal font      | jetbrains-mono-fonts-all | ttf-jetbrains-mono | fonts-jetbr
 icons              | adwaita-icon-theme       | adwaita-icon-theme | adwaita-icon-theme
 icons (red)        | gnome-colors-icon-theme  | gnome-colors-icon-theme | gnome-wine-icon-theme
 browser            | firefox                  | firefox            | firefox/firefox-esr
-browser (Spotify)  | chromium                 | chromium           | chromium/chromium-browser
+second browser     | chromium                 | chromium           | chromium/chromium-browser
 files              | nautilus                 | nautilus           | nautilus
 text editor        | mousepad                 | mousepad           | mousepad
 calculator         | galculator               | galculator         | galculator
-volume control     | pavucontrol              | pavucontrol        | pavucontrol
-bluetooth          | blueman                  | blueman            | blueman
-office             | libreoffice              | libreoffice-fresh  | libreoffice
+volume control     | wiremix/cargo:wiremix    | wiremix            | wiremix/cargo:wiremix
+bluetooth          | bluetui/cargo:bluetui    | bluetui            | bluetui/cargo:bluetui
+network            | nmrs-tui/cargo:nmrs-tui  | nmrs-tui/cargo:nmrs-tui | nmrs-tui/cargo:nmrs-tui
+audio scope        | scope-tui/cargo:scope-tui | scope-tui/cargo:scope-tui | scope-tui/cargo:scope-tui
+audio scope helper | pulseaudio-utils         | libpulse           | pulseaudio-utils
+office           | libreoffice              | libreoffice-fresh  | libreoffice
 media player       | vlc                      | vlc                | vlc
 clock              | gnome-clocks             | gnome-clocks       | gnome-clocks
 system info        | fastfetch                | fastfetch          | fastfetch
@@ -122,6 +127,20 @@ sfwbar_build_deps_dnf="gcc meson ninja-build pkgconf-pkg-config curl tar
   gtk3-devel gtk-layer-shell-devel json-c-devel wayland-devel wayland-protocols-devel"
 sfwbar_build_deps_apt="build-essential meson ninja-build pkg-config curl ca-certificates
   libgtk-3-dev libgtk-layer-shell-dev libjson-c-dev libwayland-dev wayland-protocols"
+
+# What building the cargo: crates needs (only installed if one is built):
+# PipeWire headers and clang for wiremix, D-Bus for bluetui, libpulse and
+# ALSA for scope-tui. Arch's packages ship headers.
+cargo_build_deps_dnf="cargo gcc pkgconf-pkg-config clang pipewire-devel dbus-devel
+  pulseaudio-libs-devel alsa-lib-devel"
+cargo_build_deps_pacman="rust base-devel clang"
+cargo_build_deps_apt="cargo build-essential pkg-config clang libpipewire-0.3-dev libspa-0.2-dev
+  libdbus-1-dev libpulse-dev libasound2-dev"
+# Extra cargo features: scope-tui only reads PulseAudio (which PipeWire
+# provides) with this one.
+cargo_features() {
+  case $1 in scope-tui) echo pulseaudio ;; esac
+}
 
 case $pm in dnf) col=2 ;; pacman) col=3 ;; apt) col=4 ;; esac
 # --yes: the package manager's own "don't ask" flag.
@@ -166,6 +185,7 @@ fi
 repo_pkgs=()
 aur_pkgs=()
 src_pkgs=()
+cargo_pkgs=()
 missing=()
 report=()   # one "status|what|name" line per package, printed after checking
 
@@ -200,10 +220,12 @@ for line in "${rows[@]}"; do
   [ $tty -eq 1 ] && printf '\r\033[K  %d/%d  %s' "$i" "${#rows[@]}" "${names%%/*}"
   found=""
   for name in "${candidates[@]}"; do
+    [[ $name == cargo:* ]] && continue
     if available "$name"; then found=$name; repo_pkgs+=("$name"); report+=("ok|$what|$name"); break; fi
   done
   if [ -z "$found" ] && [ "$pm" = pacman ]; then
     for name in "${candidates[@]}"; do
+      [[ $name == cargo:* ]] && continue
       if in_aur "$name"; then
         if [ $as_root -eq 1 ] && [ -z "$aur_helper" ]; then
           break   # makepkg refuses to run as root; reported as missing below
@@ -215,6 +237,15 @@ for line in "${rows[@]}"; do
   if [ -z "$found" ] && [ "$names" = sfwbar ] && [ "$pm" != pacman ]; then
     found=sfwbar; src_pkgs+=(sfwbar); report+=("src|$what|sfwbar $sfwbar_tag (built from source)")
   fi
+  # cargo installs into the user's home, so not as root.
+  if [ -z "$found" ] && [ $as_root -eq 0 ]; then
+    for name in "${candidates[@]}"; do
+      if [[ $name == cargo:* ]]; then
+        found=${name#cargo:}; cargo_pkgs+=("$found")
+        report+=("cargo|$what|$found (built with cargo into ~/.local/bin)"); break
+      fi
+    done
+  fi
   if [ -z "$found" ]; then
     missing+=("$what ($names)")
     report+=("--|$what|$names (not found)")
@@ -225,18 +256,20 @@ done
 echo
 for r in "${report[@]}"; do
   IFS='|' read -r status what name <<< "$r"
-  printf '  %-4s %-20s %s\n' "$status" "$what" "$name"
+  printf '  %-5s %-20s %s\n' "$status" "$what" "$name"
 done
 echo
 summary="${#repo_pkgs[@]} from the repos"
 [ ${#aur_pkgs[@]} -gt 0 ] && summary+=", ${#aur_pkgs[@]} from the AUR"
 [ ${#src_pkgs[@]} -gt 0 ] && summary+=", ${#src_pkgs[@]} built from source"
+[ ${#cargo_pkgs[@]} -gt 0 ] && summary+=", ${#cargo_pkgs[@]} built with cargo"
 [ ${#missing[@]} -gt 0 ] && summary+=", ${#missing[@]} not found"
 echo "$summary."
 if [ ${#missing[@]} -gt 0 ]; then
   echo "Install the ones marked -- yourself."
-  if [ "$pm" = pacman ] && [ $as_root -eq 1 ]; then
-    echo "(AUR packages can't be built as root; re-run this as your normal user.)"
+  if [ $as_root -eq 1 ]; then
+    echo "(AUR packages and cargo builds go into your user's setup, so not as root;"
+    echo " re-run this as your normal user for those.)"
   fi
 fi
 
@@ -295,6 +328,39 @@ if [ ${#src_pkgs[@]} -gt 0 ]; then
   $sudo ninja -C "$src/build" install
   $sudo ldconfig
   echo "sfwbar installed to /usr/local."
+fi
+
+cargo_failed=()
+if [ ${#cargo_pkgs[@]} -gt 0 ]; then
+  echo
+  echo "Building ${cargo_pkgs[*]} with cargo (they aren't packaged here)..."
+  deps_var=cargo_build_deps_$pm
+  case $pm in
+    dnf)    $sudo dnf install $confirm ${!deps_var} ;;
+    pacman) $sudo pacman -S --needed $confirm ${!deps_var} ;;
+    apt)    $sudo apt-get install $confirm ${!deps_var} ;;
+  esac
+  for c in "${cargo_pkgs[@]}"; do
+    features=$(cargo_features "$c")
+    echo
+    echo "cargo install $c${features:+ (features: $features)}..."
+    # --locked: the versions the crate was released and tested with.
+    if ! cargo install --locked --root "$HOME/.local" ${features:+--features "$features"} "$c"; then
+      cargo_failed+=("$c")
+    fi
+  done
+  if [ ${#cargo_failed[@]} -gt 0 ]; then
+    echo
+    echo "Couldn't build: ${cargo_failed[*]}. If cargo said the crate needs a newer"
+    echo "Rust than your distro's, install rustup (https://rustup.rs), run"
+    echo "'rustup default stable', and re-run this script."
+  fi
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) echo
+       echo "Note: ~/.local/bin isn't on your PATH yet. The bash settings from"
+       echo "install.sh add it; log out and in again afterwards." ;;
+  esac
 fi
 
 echo

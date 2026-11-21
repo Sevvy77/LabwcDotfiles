@@ -31,13 +31,17 @@ state_dir=${XDG_STATE_HOME:-$HOME/.local/state}/crimson-dotfiles
 # brought up to date with, then its absolute path.
 manifest=$state_dir/installed
 
-# spotify-web.desktop is generated from the repo copy: __HOME__ becomes the
-# home path (.desktop Exec lines aren't variable-expanded, so it can't just be
-# "$HOME") and __CHROMIUM__ the Chromium command, which is chromium-browser on
-# Fedora and chromium on Arch and Debian.
-spotify_src=applications/.local/share/applications/spotify-web.desktop
+# Files earlier versions installed that the repo no longer has (paths relative
+# to $HOME). Each is removed if it's still exactly what was installed; if
+# you've edited it, it's left alone and listed at the end.
+retired=(
+  .local/share/applications/spotify-web.desktop            # Spotify web player, dropped
+  .local/share/applications/org.pulseaudio.pavucontrol.desktop  # now crimson-volume.desktop (wiremix)
+  .local/share/applications/blueman-manager.desktop        # now crimson-bluetooth.desktop (bluetui)
+  .local/share/applications/blueman-adapters.desktop
+)
 
-files_all=(labwc sfwbar fuzzel alacritty mako themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
+files_all=(labwc sfwbar fuzzel alacritty mako wiremix bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
 extras_all=(gtk galculator mousepad firefox)
 
 verbose=0
@@ -131,6 +135,27 @@ place() {
   return 0
 }
 
+kept_retired=() # retired files left in place because they'd been edited
+retire() {
+  local rel dst removed=0
+  for rel in "${retired[@]}"; do
+    dst=$HOME/$rel
+    # Only files this script installed: anything else is yours.
+    [ -n "${baseline[$dst]:-}" ] || continue
+    if [ -f "$dst" ] && [ "$(sha "$dst")" = "${baseline[$dst]}" ]; then
+      rm "$dst"
+      removed=$((removed + 1))
+      [ $verbose -eq 1 ] && printf '      %s: removed (no longer in the repo)\n' "$(tilde "$dst")"
+    elif [ -f "$dst" ]; then
+      kept_retired+=("$dst")
+    fi
+    rm -f "$dst.new"
+    unset 'baseline[$dst]'
+  done
+  [ $removed -gt 0 ] && printf '  %-14s %s\n' "(retired)" "$removed removed"
+  return 0
+}
+
 # Every supported distro gives a new account its own ~/.bashrc, so it's kept
 # and only gets one line added, sourcing ~/.bashrc.d/crimson-dotfiles.sh.
 bashrc_line='[ -f ~/.bashrc.d/crimson-dotfiles.sh ] && . ~/.bashrc.d/crimson-dotfiles.sh'
@@ -167,23 +192,10 @@ if [ ${#groups[@]} -gt 0 ]; then
   if [[ " ${groups[*]} " == *" bash "* ]]; then
     install_bashrc_line
   fi
-  tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
   for g in "${groups[@]}"; do
     n_new=0 n_updated=0 n_same=0 n_custom=0
     while IFS= read -r -d '' f; do
-      src=$f
-      if [ "$f" = "$spotify_src" ]; then
-        chromium=chromium
-        for c in chromium-browser chromium; do
-          command -v "$c" >/dev/null && { chromium=$c; break; }
-        done
-        command -v "$chromium" >/dev/null ||
-          echo "  (Spotify launcher: Chromium not found, so it uses 'chromium'. Re-run after installing it.)"
-        src=$tmp/spotify-web.desktop
-        sed -e "s|__HOME__|$HOME|g" -e "s|__CHROMIUM__|$chromium|g" "$f" > "$src"
-      fi
-      place "$src" "$HOME/${f#"$g"/}"
+      place "$f" "$HOME/${f#"$g"/}"
     done < <(find "$g" -type f ! -name '*.bak' ! -name '*~' ! -name mimeinfo.cache -print0 | sort -z)
     parts=()
     [ $n_new -gt 0 ]     && parts+=("$n_new new")
@@ -193,6 +205,7 @@ if [ ${#groups[@]} -gt 0 ]; then
     status=$(IFS=,; echo "${parts[*]}" | sed 's/,/, /g')
     printf '  %-14s %s\n' "$g" "$status"
   done
+  retire
   save_manifest
   echo
 fi
@@ -333,7 +346,7 @@ Optional:
     directly. They're copies, and re-running this script won't undo them.
     Display scaling is a good fit for ~/.config/labwc/autostart.local, e.g.:
       wlr-randr --output eDP-1 --scale 1.4
-  - After a GTK4 upgrade, regenerate the Volume Control theme:
+  - After a GTK4 upgrade, regenerate the theme for plain GTK4 apps:
     python3 scripts/gen-gtk4-crimson.py > themes/.local/share/themes/OB-Crimson-Dark/gtk-4.0/gtk.css
     ./install.sh themes
 EOF
@@ -347,6 +360,12 @@ if [ ${#pending[@]} -gt 0 ]; then
   echo "want, then delete the .new."
   for p in "${pending[@]}"; do echo "  diff $(tilde "$p") $(tilde "$p").new"; done
   echo "(Or run with --force to take the repo versions, backing yours up as .bak.)"
+  echo
+fi
+if [ ${#kept_retired[@]} -gt 0 ]; then
+  echo "These are no longer part of the repo, but you'd edited them, so they were"
+  echo "kept. Delete them if you don't need them:"
+  for p in "${kept_retired[@]}"; do echo "  rm $(tilde "$p")"; done
   echo
 fi
 if [ ${#backed_up[@]} -gt 0 ]; then

@@ -4,8 +4,9 @@
 
 labwc + sfwbar + fuzzel + alacritty, themed **Crimson Dark** throughout (window
 chrome, terminal, launcher, bar, notifications, Firefox, Nautilus, Mousepad,
-galculator, Clocks, Volume Control, lock screen and every other GTK app,
-LibreOffice included). Built on Fedora Asahi Remix; installs on Fedora,
+galculator, Clocks, lock screen and every other GTK app, LibreOffice
+included), with terminal apps for volume, Bluetooth and network.
+Built on Fedora Asahi Remix; installs on Fedora,
 Arch (including CachyOS) and Debian/Ubuntu, from a minimal TTY-only install
 or alongside an existing desktop.
 
@@ -68,11 +69,13 @@ sfwbar/.config/sfwbar/sfwbar.config
 fuzzel/.config/fuzzel/fuzzel.ini
 alacritty/.config/alacritty/alacritty.toml
 mako/.config/mako/config                           # notifications (crimson border; red for critical)
+wiremix/.config/wiremix/wiremix.toml               # Volume Control (wiremix) colours
+bin/.local/bin/audio-scope                         # scope-tui on whatever output is playing
 themes/.local/share/icons/Crimson-Wine/index.theme   # red GNOME-Colors Wine icons + Adwaita fallbacks
 themes/.local/share/themes/OB-Crimson-Dark/
   labwc/themerc        # window theme
-  gtk-3.0/gtk.css      # every GTK3 app (Mousepad, galculator, Blueman, LibreOffice, gtklock)
-  gtk-4.0/gtk.css      # plain GTK4 apps: Volume Control (generated, see scripts/)
+  gtk-3.0/gtk.css      # every GTK3 app (Mousepad, galculator, LibreOffice, gtklock)
+  gtk-4.0/gtk.css      # plain (non-libadwaita) GTK4 apps (generated, see scripts/)
   gtk-4.0/gtk-dark.css # imports gtk.css; GTK4 loads it when dark is preferred
 gtk3/.config/gtk-3.0/settings.ini                  # GTK theme = OB-Crimson-Dark, prefer dark
 gtklock/.config/gtklock/style.css                  # lock screen wallpaper (fills portrait screens too)
@@ -81,9 +84,10 @@ gtk4/.config/gtk-4.0/gtk.css                       # libadwaita apps in dark mod
 gtksourceview/.local/share/gtksourceview-4/styles/crimson-dark.xml   # Mousepad editor
 dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Nautilus when D-Bus-started
 dbus/.local/share/dbus-1/services/org.gnome.clocks.service           # dark Clocks when D-Bus-started (alarms)
-applications/.local/share/applications/*.desktop   # theme overrides + custom launchers
+applications/.local/share/applications/*.desktop   # theme overrides + launchers for the terminal apps
 bash/.bashrc.d/crimson-dotfiles.sh   # fastfetch, ~/.local/bin on PATH (sourced from your ~/.bashrc)
-install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt)
+install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt,
+                      # the terminal apps with cargo where they aren't packaged)
 install.sh
 update.sh             # pull from GitHub, then install over your configs (install.sh --force)
 ```
@@ -99,6 +103,34 @@ plus galculator's display colours (written into `galculator.conf`),
 Mousepad's `crimson-dark` colour scheme, and the global GTK theme and dark
 style (`org.gnome.desktop.interface` gtk-theme / color-scheme; all set with
 `gsettings`, which is what GTK reads on Wayland).
+
+## Terminal apps
+
+Volume, Bluetooth, network and an audio scope are terminal (TUI) apps written in
+Rust rather than GTK windows. Open them from the launcher (Super+k) by name;
+each comes up in its own opaque alacritty window:
+
+| Launcher name  | App            | Replaces            |
+|----------------|----------------|---------------------|
+| Volume Control | wiremix        | pavucontrol         |
+| Bluetooth      | bluetui        | Blueman             |
+| Network        | nmrs-tui       | nm-applet / nmtui   |
+| Audio Scope    | scope-tui      | (new)               |
+
+Each window has its own class (`crimson-volume`, `crimson-bluetooth`,
+`crimson-network`, `crimson-scope`) for labwc window rules. wiremix gets Crimson colours
+from its config file. bluetui and nmrs-tui use the terminal's palette,
+which is already Crimson Dark. nmrs-tui 0.1.1 can't read a config file (see
+Known gaps).
+
+Audio Scope runs `~/.local/bin/audio-scope`, which starts scope-tui on the
+output that's playing: the one the newest playing stream goes to on Volume
+Control's Playback tab, or the default output if nothing is playing. It
+chooses when it starts, so reopen it after moving playback to another
+output. Options after `audio-scope` go to scope-tui (e.g. `--scatter`). In
+the scope: Tab cycles oscilloscope, vectorscope and spectrum; Up/Down zoom;
+Left/Right change the time span; Space pauses; `s` toggles scatter; `h`
+hides the labels; Esc resets; `q` quits.
 
 ## Install
 
@@ -129,6 +161,13 @@ AUR: with `yay` or `paru` if you have one, otherwise the script builds it
 with `makepkg`. On Debian and Ubuntu it's built from source (the version
 this config was written for) and installed to `/usr/local`.
 
+The terminal apps (wiremix, bluetui, nmrs-tui, scope-tui) are in
+Arch's repos, apart from nmrs-tui and scope-tui, which come from the AUR. Where your
+distro doesn't package one, the script builds it with `cargo install` into
+`~/.local/bin`, and installs cargo and the libraries it needs first. nmrs-tui
+needs Rust 1.96 or newer; if your distro's is older, the script says so, and
+[rustup](https://rustup.rs) gets you a current one.
+
 Options: `--dry-run` shows what it would do, `--yes` doesn't ask to
 confirm, `--skip vlc,libreoffice` leaves packages out.
 
@@ -138,8 +177,7 @@ repo somewhere like `~/dotfiles`, not `~/.dotfiles`.
 
 ### install.sh
 
-Copies every config file into `$HOME`, fills in the one `.desktop` file that
-needs an absolute path, applies the theme pieces that aren't plain files
+Copies every config file into `$HOME`, applies the theme pieces that aren't plain files
 (`galculator`, `mousepad`, `firefox`), creates `~/Pictures`, refreshes the
 desktop database and reloads the D-Bus session config. Pass names to install
 a subset, e.g. `./install.sh alacritty bash firefox`, and `--verbose` to see
@@ -167,7 +205,9 @@ earlier version of the script had replaced your `.bashrc` and moved the
 distro's to `~/.bashrc.skel`, the distro's is put back.
 
 Installs made by earlier versions of this script symlinked files into the
-repo; a re-run replaces those symlinks with copies.
+repo; a re-run replaces those symlinks with copies. Files an earlier version
+installed that the repo has since dropped (such as the pavucontrol, Blueman
+and Spotify web launchers) are removed, unless you've edited them.
 
 Firefox needs a profile to exist first (start and quit it once, then run
 `./install.sh firefox`), and a restart to pick up the stylesheets. galculator
@@ -199,10 +239,15 @@ changes and merge the repo's `.new` versions yourself.
 
 ## Known gaps
 
-- The Volume Control theme is generated from GTK 4.22's built-in stylesheet.
-  After a GTK4 upgrade, re-run `scripts/gen-gtk4-crimson.py` (needs
-  `python3-gobject`), as `install.sh` reminds you.
-- Volume Control's slider knobs stay grey: they are bitmap images inside GTK.
+- The theme for plain GTK4 apps is generated from GTK 4.22's built-in
+  stylesheet. After a GTK4 upgrade, re-run `scripts/gen-gtk4-crimson.py`
+  (needs `python3-gobject`), as `install.sh` reminds you.
+- nmrs-tui 0.1.1 ignores its config file: it reads it through `ron::Value`,
+  which drops enum names such as `Thick`, so loading always fails and it
+  quietly uses its built-in settings. Its defaults use the terminal's yellow
+  and green, which suit Crimson Dark.
+- bluetui's colours are fixed in its code (focused panes get a green
+  border); it only follows the terminal palette.
 - Web pages keep their own colours; Dark Reader (a browser extension, not in
   this repo) darkens them.
 - `bluez`, `network-module` and `volume` sfwbar widgets are commented out —

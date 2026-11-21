@@ -1,0 +1,57 @@
+#!/bin/sh
+# audio-scope: scope-tui attached to whatever is playing right now.
+#
+# It picks the output (sink) that the newest playing stream goes to, the one
+# that stream sits under on the Playback tab of Volume Control (wiremix). If
+# nothing is playing, it uses the default output. scope-tui then records from
+# that output's monitor, so it shows exactly what you hear.
+#
+# The output is chosen once, at launch: if playback moves to another output,
+# close and reopen it. Extra options go to scope-tui, e.g. audio-scope --scatter
+# (see scope-tui --help).
+
+# Opened from the launcher, the window closes as soon as this exits, so on
+# an error keep it open until Enter is pressed; otherwise the message is lost.
+fail() {
+  echo "audio-scope: $1" >&2
+  if [ -t 0 ]; then
+    printf 'Press Enter to close.' >&2
+    read -r _
+  fi
+  exit 1
+}
+
+# A plain "cargo install" puts it in ~/.cargo/bin, which the desktop session's
+# PATH often doesn't include.
+PATH=$PATH:${CARGO_HOME:-$HOME/.cargo}/bin
+command -v scope-tui >/dev/null ||
+  fail "scope-tui isn't installed (Arch: paru -S scope-tui; see install-packages.sh)"
+# It needs to be built with PulseAudio support (cargo: --features pulseaudio).
+scope-tui --help 2>/dev/null | grep -q '^  pulse ' ||
+  fail "this scope-tui was built without PulseAudio support; reinstall it with:
+  cargo install --locked --force --features pulseaudio scope-tui"
+command -v pactl >/dev/null || fail "needs pactl (libpulse / pulseaudio-utils)"
+
+# Sink index of the newest stream that is playing (not paused).
+index=$(pactl list sink-inputs 2>/dev/null | awk '
+  /^Sink Input #/ { sink = "" }
+  /^[ \t]+Sink: / { sink = $2 }
+  /^[ \t]+Corked: no/ && sink != "" { newest = sink }
+  END { print newest }')
+
+sink=""
+if [ -n "$index" ]; then
+  sink=$(pactl list sinks short | awk -v i="$index" '$1 == i { print $2 }')
+fi
+[ -n "$sink" ] || sink=$(pactl get-default-sink 2>/dev/null)
+[ -n "$sink" ] || fail "no audio output found (is PipeWire running?)"
+
+# Crimson Dark: crimson and amber traces, muted axes, readable labels.
+scope-tui \
+  --palette-color '#e5484d,#e0a867,#c77da0,#86b0a8' \
+  --labels-color '#e8d5d0' \
+  --axis-color '#7a5a5e' \
+  "$@" pulse "$sink.monitor"
+status=$?
+# 0 is a normal quit (q). Anything else is a crash or a bad option.
+[ $status -eq 0 ] || fail "scope-tui exited with status $status (output: $sink)"

@@ -1,0 +1,37 @@
+# wiremix (PipeWire volume mixer), Crimson Dark. Opened as "Volume Control"
+# from the launcher. Anything not set here keeps wiremix's default; the full
+# list of options is in wiremix.toml in wiremix's source.
+
+theme = "crimson"
+
+# Same colours as alacritty.toml. Explicit hex rather than ANSI names: the
+# terminal's bright black is the same dark #3a2528 as black, which is right
+# for empty bars but would hide text.
+[themes.crimson]
+default_device = { fg = "#e0a867" }
+default_stream = { fg = "#e0a867" }
+selector = { fg = "#e5484d" }
+tab = { fg = "#7a5a5e" }
+tab_selected = { fg = "#f5e9e6", add_modifier = "BOLD" }
+tab_marker = { fg = "#e5484d" }
+list_more = { fg = "#7a5a5e" }
+node_title = { }
+node_target = { fg = "#7a5a5e" }
+volume = { }
+volume_empty = { fg = "#3a2528" }
+volume_filled = { fg = "#c0303a" }
+meter_inactive = { fg = "#3a2528" }
+meter_active = { fg = "#e0a867" }
+meter_overload = { fg = "#e5484d" }
+meter_center_inactive = { fg = "#3a2528" }
+meter_center_active = { fg = "#e0a867" }
+config_device = { }
+config_profile = { fg = "#7a5a5e" }
+dropdown_icon = { fg = "#e5484d" }
+dropdown_border = { fg = "#c0303a" }
+dropdown_item = { }
+dropdown_selected = { fg = "#f5e9e6", bg = "#3a2226", add_modifier = "BOLD" }
+dropdown_more = { fg = "#7a5a5e" }
+help_border = { fg = "#c0303a" }
+help_item = { }
+help_more = { fg = "#7a5a5e" }
