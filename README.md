@@ -91,6 +91,8 @@ dbus/.local/share/dbus-1/services/org.gnome.Nautilus.service         # dark Naut
 dbus/.local/share/dbus-1/services/org.gnome.clocks.service           # dark Clocks when D-Bus-started (alarms)
 applications/.local/share/applications/*.desktop   # theme overrides + launchers for the terminal apps
 bash/.bashrc.d/crimson-dotfiles.sh   # fastfetch, ~/.local/bin on PATH (sourced from your ~/.bashrc)
+fish/.config/fish/conf.d/crimson-dotfiles.fish   # the same for fish (runs before your config.fish)
+fastfetch/.config/fastfetch/config.jsonc         # fastfetch: red logo (your distro's), chosen modules
 install-packages.sh   # installs the software (dnf, pacman+AUR, or apt; sfwbar from source on apt,
                       # the terminal apps with cargo where they aren't packaged)
 install.sh
@@ -199,7 +201,9 @@ package to its name on each distro, checks every name before installing,
 and lists anything it can't find instead of failing. Besides the desktop's
 own programs it installs what a minimal system lacks: graphics drivers,
 PipeWire audio, bluetooth, a polkit agent for password prompts, fonts and
-icons. It then enables bluetooth and the PipeWire user services.
+icons. It also installs the fish shell and the everyday apps: REAPER,
+Ardour, guitarix, Carla and qpwgraph for music, GIMP and FreeCAD (leave any
+out with `--skip`). It then enables bluetooth and the PipeWire user services.
 
 The bar, `sfwbar`, isn't packaged everywhere. On Arch it comes from the
 AUR: with `yay` or `paru` if you have one, otherwise the script builds it
@@ -282,6 +286,9 @@ changes and merge the repo's `.new` versions yourself.
 - Anything specific to one machine (a different monitor setup, the bar on
   one screen only, keybindings): edit the installed files in `~/.config`
   directly.
+- Shell: both bash and fish get the same setup (fastfetch, `~/.local/bin`
+  on PATH). Neither is made your login shell; to use fish, run
+  `chsh -s "$(command -v fish)"` and log in again.
 - Display scaling and other startup commands can also go in
   `~/.config/labwc/autostart.local`, which `autostart` runs and which the
   repo doesn't ship, so repo updates to `autostart` still apply cleanly.
@@ -302,6 +309,9 @@ changes and merge the repo's `.new` versions yourself.
   Controls' tab icons show as boxes there until you install one (any
   [Nerd Font](https://www.nerdfonts.com), e.g. Symbols Only, in
   `~/.local/share/fonts`).
+- REAPER is only packaged on Arch. On Fedora, Debian and Ubuntu, download
+  it from [reaper.fm](https://www.reaper.fm) (labwc's `environment` already
+  sets the GTK fallback it needs to show its windows).
 - Web pages keep their own colours; Dark Reader (a browser extension, not in
   this repo) darkens them.
 - `bluez`, `network-module` and `volume` sfwbar widgets are commented out —

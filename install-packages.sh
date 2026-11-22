@@ -119,7 +119,15 @@ office           | libreoffice              | libreoffice-fresh  | libreoffice
 media player       | vlc                      | vlc                | vlc
 clock              | gnome-clocks             | gnome-clocks       | gnome-clocks
 system info        | fastfetch                | fastfetch          | fastfetch
+shell              | fish                     | fish               | fish
 notifications      | mako                     | mako               | mako-notifier/mako
+music: DAW         | -                        | reaper             | -
+music: DAW         | ardour9/ardour8/ardour   | ardour             | ardour
+music: amp sim     | guitarix                 | guitarix           | guitarix
+music: plugin host | Carla/carla              | carla              | carla
+music: patchbay    | qpwgraph                 | qpwgraph           | qpwgraph
+image editor       | gimp                     | gimp               | gimp
+CAD                | freecad                  | freecad            | freecad
 GTK4 theme script  | python3-gobject          | python-gobject     | python3-gi
 dark mode for GTK4 | xdg-desktop-portal-gtk   | xdg-desktop-portal-gtk | xdg-desktop-portal-gtk
 '

@@ -46,7 +46,7 @@ retired=(
   .local/share/applications/blueman-adapters.desktop
 )
 
-files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij tuimenu bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
+files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij tuimenu fastfetch bin themes applications bash fish gtk3 gtk4 gtklock gtksourceview dbus systemd)
 extras_all=(gtk galculator mousepad firefox tuimenu-build zjstatus)
 
 # zjstatus release for System Controls' tab bar, and its sha256 (the digest
