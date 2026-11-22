@@ -73,6 +73,7 @@ wiremix/.config/wiremix/wiremix.toml               # Volume Control (wiremix) co
 zellij/.config/zellij/system-controls.kdl          # System Controls: zellij settings, Alt keys, Crimson theme
 zellij/.config/zellij/layouts/system-controls.kdl  # its three tabs and the zjstatus tab bar
 zellij/.config/zellij/layouts/zjstatus-permissions.kdl  # one-off screen for allowing zjstatus
+tuimenu/.config/tuimenu/list.json                  # tuimenu's list of programs
 bin/.local/bin/audio-scope                         # scope-tui on whatever output is playing
 bin/.local/bin/system-controls                     # opens System Controls (Super+o)
 themes/.local/share/icons/Crimson-Wine/index.theme   # red GNOME-Colors Wine icons + Adwaita fallbacks
@@ -101,9 +102,11 @@ Handled separately by `install.sh`:
 ```
 firefox/chrome/{userChrome,userContent}.css, firefox/user.js   # copied/merged into the default profile
 scripts/gen-gtk4-crimson.py   # regenerates gtk-4.0/gtk.css from GTK's own stylesheet (not installed)
+src/tuimenu/                  # tuimenu restyled in Crimson Dark, built with cargo into ~/.local/bin
 ```
 
 plus galculator's display colours (written into `galculator.conf`),
+zjstatus for System Controls (downloaded, see below),
 Mousepad's `crimson-dark` colour scheme, and the global GTK theme and dark
 style (`org.gnome.desktop.interface` gtk-theme / color-scheme; all set with
 `gsettings`, which is what GTK reads on Wayland).
@@ -166,6 +169,14 @@ happens after an update brings a new zjstatus. The tab icons are Nerd Font
 glyphs, which alacritty takes from any installed Nerd Font (on Arch,
 `install-packages.sh` installs the symbols-only one).
 
+### tuimenu
+
+`tuimenu` is a small menu for launching terminal programs, listed in
+`~/.config/tuimenu/list.json` (arrows or j/k, Enter, q). It's built from
+`src/tuimenu`, a copy of tuimenu 0.0.2 restyled in Crimson Dark (see its
+README for the changes), not installed from crates.io, which would give the
+unstyled version.
+
 ## Install
 
 ```sh
@@ -201,7 +212,9 @@ which come from the AUR. Where your
 distro doesn't package one, the script builds it with `cargo install` into
 `~/.local/bin`, and installs cargo and the libraries it needs first. nmrs-tui
 needs Rust 1.96 or newer; if your distro's is older, the script says so, and
-[rustup](https://rustup.rs) gets you a current one.
+[rustup](https://rustup.rs) gets you a current one. If there's no cargo at
+all, it installs your distro's Rust, which `install.sh` uses to build
+tuimenu (an existing rustup is left alone).
 
 Options: `--dry-run` shows what it would do, `--yes` doesn't ask to
 confirm, `--skip vlc,libreoffice` leaves packages out.
@@ -214,7 +227,8 @@ repo somewhere like `~/dotfiles`, not `~/.dotfiles`.
 
 Copies every config file into `$HOME`, applies the theme pieces that aren't plain files
 (`galculator`, `mousepad`, `firefox`), downloads zjstatus for System
-Controls (`zjstatus`), creates `~/Pictures`, refreshes the
+Controls (`zjstatus`), builds tuimenu from `src/tuimenu` with cargo
+(`tuimenu-build`; only again when that source changes), creates `~/Pictures`, refreshes the
 desktop database and reloads the D-Bus session config. Pass names to install
 a subset, e.g. `./install.sh alacritty bash firefox`, and `--verbose` to see
 what happened to every file.

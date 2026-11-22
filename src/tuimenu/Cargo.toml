@@ -1,0 +1,14 @@
+[package]
+name = "tuimenu"
+authors = ["Anthony Chester <anthonychester71@gmail.com>"]
+version = "0.0.2-crimson.1"
+description = "A simple tui/cli program launcher"
+repository = "https://github.com/achester88/tuimenu/"
+license = "MIT"
+readme = "./README.md"
+edition = "2024"
+
+[dependencies]
+serde = "1.0.226"
+serde_json = "1.0.145"
+termion = "4.0.5"

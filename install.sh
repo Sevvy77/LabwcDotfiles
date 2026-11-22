@@ -6,8 +6,10 @@
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
 #   - the GTK theme and dark style for every GTK app (also GSettings)
 #   - Firefox userChrome/userContent (the profile directory name is random)
-# and downloads zjstatus, the tab bar plugin System Controls uses in zellij
-# (a pinned release, checked against its sha256; not stored in the repo).
+# and the parts that are built or downloaded:
+#   - tuimenu, built with cargo from this repo's patched copy (src/tuimenu)
+#   - zjstatus, the tab bar plugin System Controls uses in zellij (a pinned
+#     release, checked against its sha256; not stored in the repo)
 #
 # The copies are yours to edit; the repo is only where they come from. Each
 # run remembers what it installed (in $state_dir below), so a re-run after
@@ -21,7 +23,8 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (config directories in this
 #                                  # repo and/or the extras: galculator
-#                                  # gtk mousepad firefox zjstatus)
+#                                  # gtk mousepad firefox tuimenu-build
+#                                  # zjstatus)
 #        ./install.sh --force      # replace files that differ, keeping .bak
 #        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
@@ -43,8 +46,8 @@ retired=(
   .local/share/applications/blueman-adapters.desktop
 )
 
-files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
-extras_all=(gtk galculator mousepad firefox zjstatus)
+files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij tuimenu bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
+extras_all=(gtk galculator mousepad firefox tuimenu-build zjstatus)
 
 # zjstatus release for System Controls' tab bar, and its sha256 (the digest
 # GitHub publishes for that release's zjstatus.wasm).
@@ -317,6 +320,34 @@ install_firefox() {
     case "$line" in user_pref*) grep -qxF "$line" "$p/user.js" || echo "$line" >> "$p/user.js" ;; esac
   done < firefox/user.js
   echo "firefox: installed into $p (restart Firefox to apply)."
+}
+
+# tuimenu: built from src/tuimenu (a Crimson Dark restyle of tuimenu 0.0.2,
+# see its README) into ~/.local/bin. Rebuilt only when that source changes.
+install_tuimenu-build() {
+  local src="$repo/src/tuimenu" bin="$HOME/.local/bin/tuimenu"
+  local stamp="$state_dir/tuimenu-src.sha256" want
+  want=$(cd "$src" && find Cargo.toml Cargo.lock src -type f -print0 | sort -z |
+         xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+  if [ -x "$bin" ] && [ "$(cat "$stamp" 2>/dev/null)" = "$want" ]; then
+    echo "tuimenu: up to date."
+    return
+  fi
+  if ! command -v cargo >/dev/null; then
+    echo "tuimenu: needs cargo to build; run ./install-packages.sh, then ./install.sh tuimenu-build" >&2
+    return
+  fi
+  # Its own target dir, so building doesn't leave files in the repo.
+  if cargo install --quiet --locked --force --root "$HOME/.local" \
+       --target-dir "${XDG_CACHE_HOME:-$HOME/.cache}/crimson-dotfiles/tuimenu-target" \
+       --path "$src"; then
+    mkdir -p "$state_dir"
+    echo "$want" > "$stamp"
+    echo "tuimenu: built from src/tuimenu into ~/.local/bin."
+  else
+    echo "tuimenu: the build failed (see above). It needs Rust 1.85 or newer;" >&2
+    echo "         rustup (https://rustup.rs) gets you a current one." >&2
+  fi
 }
 
 install_zjstatus() {

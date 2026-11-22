@@ -255,6 +255,16 @@ for line in "${rows[@]}"; do
 done
 [ $tty -eq 1 ] && printf '\r\033[K'
 
+# install.sh builds tuimenu (src/tuimenu) with cargo. Only install a Rust
+# toolchain if there's no cargo at all: on Arch, rustup (e.g. CachyOS's
+# default) conflicts with the rust package.
+need_cargo=0
+if ! command -v cargo >/dev/null; then
+  need_cargo=1
+  case $pm in dnf|apt) cargo_pkg=cargo ;; pacman) cargo_pkg=rust ;; esac
+  report+=("ok|rust toolchain|$cargo_pkg (install.sh builds tuimenu with it)")
+fi
+
 echo
 for r in "${report[@]}"; do
   IFS='|' read -r status what name <<< "$r"
@@ -291,6 +301,14 @@ if [ ${#repo_pkgs[@]} -gt 0 ]; then
     # upgrade, which Arch doesn't support.
     pacman) $sudo pacman -Su --needed $confirm "${repo_pkgs[@]}" ;;
     apt)    $sudo apt-get install $confirm "${repo_pkgs[@]}" ;;
+  esac
+fi
+
+if [ $need_cargo -eq 1 ] && ! command -v cargo >/dev/null; then
+  case $pm in
+    dnf)    $sudo dnf install $confirm cargo ;;
+    pacman) $sudo pacman -S --needed $confirm rust ;;
+    apt)    $sudo apt-get install $confirm cargo ;;
   esac
 fi
 
