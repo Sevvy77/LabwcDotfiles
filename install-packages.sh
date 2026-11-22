@@ -11,6 +11,9 @@
 # on Arch (with yay/paru if installed, otherwise built with makepkg) and is
 # built from source on Debian and Ubuntu.
 #
+# Safe to re-run (update.sh runs it every time): AUR packages, cargo builds
+# and a from-source sfwbar that are already installed aren't built again.
+#
 # Usage: ./install-packages.sh                  # check names, then install
 #        ./install-packages.sh --dry-run        # only show what would happen
 #        ./install-packages.sh --yes            # don't ask to confirm
@@ -72,6 +75,8 @@ fi
 # sfwbar version to build from source where it isn't packaged. The config in
 # this repo was written against it (see sfwbar.config).
 sfwbar_tag=v1.0_beta16.1
+# Records which tag was last built, so re-runs don't rebuild it.
+sfwbar_stamp=${XDG_STATE_HOME:-$HOME/.local/state}/crimson-dotfiles/sfwbar-built
 
 # What it's for | dnf name | pacman name | apt name
 # "a/b" means try a, then b. "-" means skip on that distro. "cargo:crate"
@@ -236,6 +241,10 @@ for line in "${rows[@]}"; do
   if [ -z "$found" ] && [ "$pm" = pacman ]; then
     for name in "${candidates[@]}"; do
       [[ $name == cargo:* ]] && continue
+      # Already installed (from the AUR earlier): nothing to build.
+      if pacman -Q "$name" >/dev/null 2>&1; then
+        found=$name; report+=("ok|$what|$name (installed, from the AUR)"); break
+      fi
       if in_aur "$name"; then
         if [ $as_root -eq 1 ] && [ -z "$aur_helper" ]; then
           break   # makepkg refuses to run as root; reported as missing below
@@ -245,14 +254,25 @@ for line in "${rows[@]}"; do
     done
   fi
   if [ -z "$found" ] && [ "$names" = sfwbar ] && [ "$pm" != pacman ]; then
-    found=sfwbar; src_pkgs+=(sfwbar); report+=("src|$what|sfwbar $sfwbar_tag (built from source)")
+    found=sfwbar
+    if command -v sfwbar >/dev/null && [ "$(cat "$sfwbar_stamp" 2>/dev/null)" = "$sfwbar_tag" ]; then
+      report+=("ok|$what|sfwbar $sfwbar_tag (installed, built from source)")
+    else
+      src_pkgs+=(sfwbar); report+=("src|$what|sfwbar $sfwbar_tag (built from source)")
+    fi
   fi
   # cargo installs into the user's home, so not as root.
   if [ -z "$found" ] && [ $as_root -eq 0 ]; then
     for name in "${candidates[@]}"; do
       if [[ $name == cargo:* ]]; then
-        found=${name#cargo:}; cargo_pkgs+=("$found")
-        report+=("cargo|$what|$found (built with cargo into ~/.local/bin)"); break
+        found=${name#cargo:}
+        if [ -x "$HOME/.local/bin/$found" ]; then
+          report+=("ok|$what|$found (installed, built with cargo)")
+        else
+          cargo_pkgs+=("$found")
+          report+=("cargo|$what|$found (built with cargo into ~/.local/bin)")
+        fi
+        break
       fi
     done
   fi
@@ -355,6 +375,8 @@ if [ ${#src_pkgs[@]} -gt 0 ]; then
   ninja -C "$src/build"
   $sudo ninja -C "$src/build" install
   $sudo ldconfig
+  mkdir -p "$(dirname "$sfwbar_stamp")"
+  echo "$sfwbar_tag" > "$sfwbar_stamp"
   echo "sfwbar installed to /usr/local."
 fi
 

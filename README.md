@@ -269,10 +269,19 @@ must be closed while its colours are written.
 
 ### update.sh
 
-Gets the latest version from GitHub and installs it over your config files,
-replacing any that differ from the repo (your changed copies are kept as
-`<file>.bak`). It's `git pull --ff-only` then `./install.sh --force`, and
-takes the same names and `--verbose`. Without git (e.g. a copy from the
+Gets the latest version from GitHub, installs any software the repo now
+needs, and installs it over your config files, replacing any that differ
+from the repo (your changed copies are kept as `<file>.bak`). It's
+`git pull --ff-only`, then `./install-packages.sh`, then
+`./install.sh --force`, and takes the same names and `--verbose`.
+
+`install-packages.sh` asks for your sudo password and, on Arch, upgrades the
+system along with it (Arch doesn't support installing without upgrading).
+AUR packages, cargo builds and a from-source sfwbar that are already there
+aren't built again. `--yes` installs without asking to confirm;
+`--no-packages`, or naming config groups (`./update.sh labwc`), skips it. If
+the update brings a new `update.sh`, it restarts itself to carry on with
+it. Without git (e.g. a copy from the
 .zip), it downloads the repo with curl or wget instead. Works on Fedora,
 Arch, CachyOS, Debian and Ubuntu.
 
