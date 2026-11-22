@@ -46,8 +46,22 @@ fi
 [ -n "$sink" ] || sink=$(pactl get-default-sink 2>/dev/null)
 [ -n "$sink" ] || fail "no audio output found (is PipeWire running?)"
 
+# Zoom in so normal listening levels fill the window: --scale is the height
+# of the vertical axis (1 = full scale), so 0.5 draws everything twice as tall.
+# Set AUDIO_SCOPE_SCALE to change it, or pass --scale yourself (scope-tui
+# rejects the option twice, so ours is dropped then). In the window, Up/Down
+# still zoom and r resets to 1.
+scale_opt="--scale=${AUDIO_SCOPE_SCALE:-0.5}"
+for arg in "$@"; do
+  case $arg in
+  -s* | --scale | --scale=*) scale_opt="" ;;
+  esac
+done
+
 # Crimson Dark: crimson and amber traces, muted axes, readable labels.
-scope-tui \
+# $scale_opt is unquoted on purpose: when empty it must vanish, not be "".
+# shellcheck disable=SC2086
+scope-tui $scale_opt \
   --palette-color '#e5484d,#e0a867,#c77da0,#86b0a8' \
   --labels-color '#e8d5d0' \
   --axis-color '#7a5a5e' \
