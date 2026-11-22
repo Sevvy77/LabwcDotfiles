@@ -42,6 +42,13 @@
     <keybind key="W-n" onRelease="yes">
       <action name="Execute" command="wdisplays" />
     </keybind>
+    <!-- System Controls: Bluetooth, Networks and Volume Control as tabs
+         (same command as crimson-controls.desktop) -->
+    <keybind key="W-o" onRelease="yes">
+      <action name="Execute">
+        <command>alacritty -o window.opacity=1 --class crimson-controls --title "System Controls" -e system-controls</command>
+      </action>
+    </keybind>
     <keybind key="W-h" onRelease="yes">
       <action name="ToggleMaximize" />
     </keybind>

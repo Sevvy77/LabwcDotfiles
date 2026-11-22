@@ -70,7 +70,11 @@ fuzzel/.config/fuzzel/fuzzel.ini
 alacritty/.config/alacritty/alacritty.toml
 mako/.config/mako/config                           # notifications (crimson border; red for critical)
 wiremix/.config/wiremix/wiremix.toml               # Volume Control (wiremix) colours
+zellij/.config/zellij/system-controls.kdl          # System Controls: zellij settings, Alt keys, Crimson theme
+zellij/.config/zellij/layouts/system-controls.kdl  # its three tabs and the zjstatus tab bar
+zellij/.config/zellij/layouts/zjstatus-permissions.kdl  # one-off screen for allowing zjstatus
 bin/.local/bin/audio-scope                         # scope-tui on whatever output is playing
+bin/.local/bin/system-controls                     # opens System Controls (Super+o)
 themes/.local/share/icons/Crimson-Wine/index.theme   # red GNOME-Colors Wine icons + Adwaita fallbacks
 themes/.local/share/themes/OB-Crimson-Dark/
   labwc/themerc        # window theme
@@ -108,7 +112,8 @@ style (`org.gnome.desktop.interface` gtk-theme / color-scheme; all set with
 
 Volume, Bluetooth, network and an audio scope are terminal (TUI) apps written in
 Rust rather than GTK windows. Open them from the launcher (Super+k) by name;
-each comes up in its own opaque alacritty window:
+each comes up in its own opaque alacritty window. Super+o opens the first
+three together, as tabs (see System Controls below):
 
 | Launcher name  | App            | Replaces            |
 |----------------|----------------|---------------------|
@@ -131,6 +136,35 @@ output. Options after `audio-scope` go to scope-tui (e.g. `--scatter`). In
 the scope: Tab cycles oscilloscope, vectorscope and spectrum; Up/Down zoom;
 Left/Right change the time span; Space pauses; `s` toggles scatter; `h`
 hides the labels; Esc resets; `q` quits.
+
+### System Controls (Super+o)
+
+Super+o (or "System Controls" in the launcher) opens Bluetooth, Networks
+and Volume Control together, as tabs of one [zellij](https://zellij.dev)
+session in an alacritty window of class `crimson-controls`. All three keep
+running while you switch:
+
+| Keys                       | Does                         |
+|----------------------------|------------------------------|
+| Alt+←/→, Alt+h/l, or click | previous / next tab          |
+| Alt+1, Alt+2, Alt+3        | Bluetooth, Networks, Volume  |
+| Alt+q, or close the window | quit all three               |
+
+zellij starts locked, so every other key goes to the app. Quitting an app
+leaves its tab open; Enter starts it again. Ctrl+g unlocks zellij's own
+keys. The setup has its own config (`system-controls.kdl`), so it doesn't
+affect zellij's default `config.kdl` if you use zellij for other things.
+
+The tab bar is [zjstatus](https://github.com/dj95/zjstatus), a zellij
+plugin, because zellij's own tab bar can't hide the session name, the "+"
+button or its "running" counter. `install.sh` downloads a pinned release to
+`~/.config/zellij/plugins/` and checks its sha256. zellij makes you allow a
+plugin before it runs, and the prompt can't take keys inside the tabs
+(they go to the app), so the first time, `system-controls` opens zjstatus
+on a screen of its own: press `y`, then Alt+q, and the tabs open. The same
+happens after an update brings a new zjstatus. The tab icons are Nerd Font
+glyphs, which alacritty takes from any installed Nerd Font (on Arch,
+`install-packages.sh` installs the symbols-only one).
 
 ## Install
 
@@ -161,8 +195,9 @@ AUR: with `yay` or `paru` if you have one, otherwise the script builds it
 with `makepkg`. On Debian and Ubuntu it's built from source (the version
 this config was written for) and installed to `/usr/local`.
 
-The terminal apps (wiremix, bluetui, nmrs-tui, scope-tui) are in
-Arch's repos, apart from nmrs-tui and scope-tui, which come from the AUR. Where your
+The terminal apps (wiremix, bluetui, nmrs-tui, scope-tui, and zellij for
+System Controls) are in Arch's repos, apart from nmrs-tui and scope-tui,
+which come from the AUR. Where your
 distro doesn't package one, the script builds it with `cargo install` into
 `~/.local/bin`, and installs cargo and the libraries it needs first. nmrs-tui
 needs Rust 1.96 or newer; if your distro's is older, the script says so, and
@@ -178,7 +213,8 @@ repo somewhere like `~/dotfiles`, not `~/.dotfiles`.
 ### install.sh
 
 Copies every config file into `$HOME`, applies the theme pieces that aren't plain files
-(`galculator`, `mousepad`, `firefox`), creates `~/Pictures`, refreshes the
+(`galculator`, `mousepad`, `firefox`), downloads zjstatus for System
+Controls (`zjstatus`), creates `~/Pictures`, refreshes the
 desktop database and reloads the D-Bus session config. Pass names to install
 a subset, e.g. `./install.sh alacritty bash firefox`, and `--verbose` to see
 what happened to every file.
@@ -248,6 +284,10 @@ changes and merge the repo's `.new` versions yourself.
   and green, which suit Crimson Dark.
 - bluetui's colours are fixed in its code (focused panes get a green
   border); it only follows the terminal palette.
+- Fedora, Debian and Ubuntu don't package a Nerd Font, so System
+  Controls' tab icons show as boxes there until you install one (any
+  [Nerd Font](https://www.nerdfonts.com), e.g. Symbols Only, in
+  `~/.local/share/fonts`).
 - Web pages keep their own colours; Dark Reader (a browser extension, not in
   this repo) darkens them.
 - `bluez`, `network-module` and `volume` sfwbar widgets are commented out —

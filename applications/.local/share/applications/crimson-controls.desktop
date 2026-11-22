@@ -1,0 +1,14 @@
+# Opens Bluetooth (bluetui), Networks (nmrs-tui) and Volume Control
+# (wiremix) as tabs of one zellij session, in an alacritty window with
+# class crimson-controls. Opaque, like the other crimson-* windows.
+[Desktop Entry]
+Type=Application
+Name=System Controls
+GenericName=System Controls
+Comment=Bluetooth, networks and volume in one window (zellij)
+Icon=preferences-system
+Exec=alacritty -o window.opacity=1 --class crimson-controls --title "System Controls" -e system-controls
+Terminal=false
+Categories=Settings;
+Keywords=bluetooth;network;wifi;volume;sound;audio;settings;controls;bluetui;nmrs-tui;wiremix;zellij;
+StartupWMClass=crimson-controls

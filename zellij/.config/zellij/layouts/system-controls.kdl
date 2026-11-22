@@ -1,0 +1,46 @@
+// One named tab per settings TUI. If an app is quit, its tab stays and
+// offers Enter to start it again.
+//
+// The bar along the top is zjstatus (~/.config/zellij/plugins/zjstatus.wasm,
+// https://github.com/dj95/zjstatus) instead of zellij's own tab bar, which
+// can't hide the session name, the "+" button or the "running" counter.
+// On first launch (and after updating zjstatus) it asks for permission:
+// click the bar and press y.
+// Tab icons and the rounded tab ends are Nerd Font glyphs.
+layout {
+    default_tab_template {
+        pane size=2 borderless=true {
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                // Crimson Dark (alacritty palette)
+                color_bg      "#1f1416"
+                color_fg      "#e8d5d0"
+                color_muted   "#8c7470"
+                color_line    "#3a2528"
+                color_crimson "#e5484d"
+
+                format_left   "{tabs}"
+                format_right  "#[fg=$muted]alt ←→ switch  ·  alt q quit "
+                format_space  "#[bg=$bg]"
+
+                border_enabled  "true"
+                border_char     "─"
+                border_format   "#[fg=$line]{char}"
+                border_position "bottom"
+
+                tab_normal    "#[fg=$muted]  {name}  "
+                tab_active    "#[fg=$crimson]#[bg=$crimson,fg=$bg,bold]{name}#[fg=$crimson,bg=$bg]"
+                tab_separator " "
+            }
+        }
+        children
+    }
+    tab name="󰂯 Bluetooth" focus=true {
+        pane command="bluetui"
+    }
+    tab name="󰛳 Networks" {
+        pane command="nmrs-tui"
+    }
+    tab name="󰕾 Volume Control" {
+        pane command="wiremix"
+    }
+}

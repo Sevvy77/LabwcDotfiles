@@ -1,0 +1,12 @@
+// One-off layout for approving zjstatus's permissions. In System Controls
+// the bar is a 2-line strip without keyboard focus, so its permission
+// prompt can't be answered there. This opens zjstatus alone, full size and
+// focused. The system-controls launcher opens it automatically while the
+// permission is missing (first run, and after updating zjstatus.wasm).
+layout {
+    pane focus=true {
+        plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+            format_left "#[fg=#e5484d,bold] Allowed. #[fg=#e8d5d0]Press Alt+q to open System Controls."
+        }
+    }
+}

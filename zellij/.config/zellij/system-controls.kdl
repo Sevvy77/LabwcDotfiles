@@ -1,0 +1,49 @@
+// zellij config for the System Controls window (launched by the
+// system-controls script / crimson-controls.desktop). Kept separate from
+// config.kdl so a general-purpose zellij setup can live alongside it.
+
+// Start locked: every key goes straight to bluetui / nmrs-tui / wiremix.
+// Only the Alt bindings below (and Ctrl+g to unlock) are kept by zellij.
+default_mode "locked"
+
+theme "crimson-dark"
+pane_frames false
+mouse_mode true
+show_startup_tips false
+show_release_notes false
+
+// Closing the window or pressing Alt+q ends the session without asking,
+// rather than leaving it running in the background, and nothing is
+// saved to be resurrected later.
+on_force_close "quit"
+on_quit "quit"
+session_serialization false
+
+keybinds {
+    locked {
+        bind "Alt Left" "Alt h" { GoToPreviousTab; }
+        bind "Alt Right" "Alt l" { GoToNextTab; }
+        bind "Alt 1" { GoToTab 1; }
+        bind "Alt 2" { GoToTab 2; }
+        bind "Alt 3" { GoToTab 3; }
+        bind "Alt q" { Quit; }
+    }
+}
+
+// Crimson Dark, from alacritty's palette. zellij's tab bar draws the
+// active tab in "green", so that slot holds the crimson accent.
+themes {
+    crimson-dark {
+        fg "#e8d5d0"
+        bg "#3a2226"
+        black "#1f1416"
+        red "#e5484d"
+        green "#e5484d"
+        yellow "#e0a867"
+        blue "#7f9cb4"
+        magenta "#c77da0"
+        cyan "#86b0a8"
+        white "#e8d5d0"
+        orange "#e0a867"
+    }
+}

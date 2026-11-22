@@ -6,6 +6,8 @@
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
 #   - the GTK theme and dark style for every GTK app (also GSettings)
 #   - Firefox userChrome/userContent (the profile directory name is random)
+# and downloads zjstatus, the tab bar plugin System Controls uses in zellij
+# (a pinned release, checked against its sha256; not stored in the repo).
 #
 # The copies are yours to edit; the repo is only where they come from. Each
 # run remembers what it installed (in $state_dir below), so a re-run after
@@ -19,7 +21,7 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (config directories in this
 #                                  # repo and/or the extras: galculator
-#                                  # gtk mousepad firefox)
+#                                  # gtk mousepad firefox zjstatus)
 #        ./install.sh --force      # replace files that differ, keeping .bak
 #        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
@@ -41,8 +43,13 @@ retired=(
   .local/share/applications/blueman-adapters.desktop
 )
 
-files_all=(labwc sfwbar fuzzel alacritty mako wiremix bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
-extras_all=(gtk galculator mousepad firefox)
+files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij bin themes applications bash gtk3 gtk4 gtklock gtksourceview dbus systemd)
+extras_all=(gtk galculator mousepad firefox zjstatus)
+
+# zjstatus release for System Controls' tab bar, and its sha256 (the digest
+# GitHub publishes for that release's zjstatus.wasm).
+zjstatus_version=v0.25.0
+zjstatus_sha256=282ceab219e56e1908c9fac33907241fe6c3e1ef7d85faab3e5f438cef87b8fe
 
 verbose=0
 force=0
@@ -312,9 +319,46 @@ install_firefox() {
   echo "firefox: installed into $p (restart Firefox to apply)."
 }
 
+install_zjstatus() {
+  local dst="$HOME/.config/zellij/plugins/zjstatus.wasm" url tmp perms
+  url="https://github.com/dj95/zjstatus/releases/download/$zjstatus_version/zjstatus.wasm"
+  if [ -f "$dst" ] && [ "$(sha "$dst")" = "$zjstatus_sha256" ]; then
+    echo "zjstatus: $zjstatus_version already installed."
+    return
+  fi
+  tmp=$(mktemp)
+  if command -v curl >/dev/null; then
+    curl -fsSL -o "$tmp" "$url" || { rm -f "$tmp"; echo "zjstatus: couldn't download $url; skipped." >&2; return; }
+  elif command -v wget >/dev/null; then
+    wget -qO "$tmp" "$url" || { rm -f "$tmp"; echo "zjstatus: couldn't download $url; skipped." >&2; return; }
+  else
+    rm -f "$tmp"
+    echo "zjstatus: needs curl or wget to download; skipped." >&2
+    return
+  fi
+  if [ "$(sha "$tmp")" != "$zjstatus_sha256" ]; then
+    rm -f "$tmp"
+    echo "zjstatus: the download didn't match the expected checksum; not installed." >&2
+    return
+  fi
+  mkdir -p "$(dirname "$dst")"
+  mv "$tmp" "$dst"
+  chmod 644 "$dst"
+  # A changed plugin file has to be allowed again. Forget zellij's approval
+  # of the old one, so System Controls asks on a screen of its own (where
+  # pressing y works) instead of inside the tabs, where it can't.
+  perms=${XDG_CACHE_HOME:-$HOME/.cache}/zellij/permissions.kdl
+  if [ -f "$perms" ]; then
+    awk -v p="\"$dst\"" '$1 == p { skip = 1 } !skip { print } skip && /^}/ { skip = 0 }' \
+      "$perms" > "$perms.tmp" && mv "$perms.tmp" "$perms"
+  fi
+  echo "zjstatus: $zjstatus_version installed. The first time System Controls (Super+o)"
+  echo "          opens, it asks to allow the tab bar: press y, then Alt+q."
+}
+
 if [ ${#extras[@]} -gt 0 ]; then
   tmp_out=$(mktemp)
-  echo "Theme settings that aren't plain config files:"
+  echo "Theme settings and downloads that aren't plain config files:"
   for e in "${extras[@]}"; do
     # Not in a pipeline, so place() can update the manifest and lists.
     "install_$e" > "$tmp_out" 2>&1 || true

@@ -111,6 +111,8 @@ calculator         | galculator               | galculator         | galculator
 volume control     | wiremix/cargo:wiremix    | wiremix            | wiremix/cargo:wiremix
 bluetooth          | bluetui/cargo:bluetui    | bluetui            | bluetui/cargo:bluetui
 network            | nmrs-tui/cargo:nmrs-tui  | nmrs-tui/cargo:nmrs-tui | nmrs-tui/cargo:nmrs-tui
+system controls    | zellij/cargo:zellij      | zellij             | zellij/cargo:zellij
+tab icons          | -                        | ttf-nerd-fonts-symbols | -
 audio scope        | scope-tui/cargo:scope-tui | scope-tui/cargo:scope-tui | scope-tui/cargo:scope-tui
 audio scope helper | pulseaudio-utils         | libpulse           | pulseaudio-utils
 office           | libreoffice              | libreoffice-fresh  | libreoffice
