@@ -7,12 +7,18 @@
 #
 # Every name is checked against the package manager before installing, so a
 # name that doesn't exist on your distro is reported instead of failing the
-# whole install. Where the bar (sfwbar) isn't packaged, it comes from the AUR
-# on Arch (with yay/paru if installed, otherwise built with makepkg) and is
-# built from source on Debian and Ubuntu.
+# whole install. Packages not in your distro's own repos come from the AUR
+# on Arch-based distros (with yay/paru if installed, otherwise built with
+# makepkg) or are built with cargo.
+#
+# Quickshell (the bar, launcher, lock screen and notifications) needs 0.3+:
+# on Fedora it comes from the errornointernet/quickshell COPR (Fedora's own
+# package is older), on Debian 13 from trixie-backports (enabled if it isn't
+# already), and on Ubuntu releases that don't package it (26.04) it's built
+# from source into /usr/local.
 #
 # Safe to re-run (update.sh runs it every time): AUR packages, cargo builds
-# and a from-source sfwbar that are already installed aren't built again.
+# and a from-source Quickshell that are already installed aren't built again.
 #
 # Usage: ./install-packages.sh                  # check names, then install
 #        ./install-packages.sh --dry-run        # only show what would happen
@@ -72,11 +78,11 @@ if [ "$pm" = pacman ]; then
   for h in yay paru; do command -v "$h" >/dev/null && { aur_helper=$h; break; }; done
 fi
 
-# sfwbar version to build from source where it isn't packaged. The config in
-# this repo was written against it (see sfwbar.config).
-sfwbar_tag=v1.0_beta16.1
+# Quickshell version to build from source where it isn't packaged (Ubuntu
+# 26.04). The config in quickshell/ was written against 0.3.
+quickshell_tag=v0.3.2
 # Records which tag was last built, so re-runs don't rebuild it.
-sfwbar_stamp=${XDG_STATE_HOME:-$HOME/.local/state}/crimson-dotfiles/sfwbar-built
+quickshell_stamp=${XDG_STATE_HOME:-$HOME/.local/state}/crimson-dotfiles/quickshell-built
 
 # What it's for | dnf name | pacman name | apt name
 # "a/b" means try a, then b. "-" means skip on that distro. "cargo:crate"
@@ -86,11 +92,14 @@ packages='
 compositor         | labwc                    | labwc              | labwc
 login screen entry | labwc-session            | -                  | -
 graphics drivers   | mesa-dri-drivers         | mesa               | libgl1-mesa-dri
-bar                | sfwbar                   | sfwbar             | sfwbar
-launcher           | fuzzel                   | fuzzel             | fuzzel
+bar, launcher, lock | quickshell              | quickshell         | quickshell
+shell: SVG icons   | qt6-qtsvg                | qt6-svg            | qt6-svg-plugins
+shell: QML         | -                        | -                  | qml6-module-qtquick
+shell: QML layouts | -                        | -                  | qml6-module-qtquick-layouts
+shell: QML effects | -                        | -                  | qml6-module-qtquick-effects
+shell: QML controls | -                       | -                  | qml6-module-qtquick-controls
 terminal           | alacritty                | alacritty          | alacritty
 wallpaper          | swaybg                   | swaybg             | swaybg
-lock screen        | gtklock                  | gtklock            | gtklock
 screenshots        | grim                     | grim               | grim
 screenshot region  | slurp                    | slurp              | slurp
 screenshot to clip | wl-clipboard             | wl-clipboard       | wl-clipboard
@@ -125,7 +134,6 @@ media player       | vlc                      | vlc                | vlc
 clock              | gnome-clocks             | gnome-clocks       | gnome-clocks
 system info        | fastfetch                | fastfetch          | fastfetch
 shell              | fish                     | fish               | fish
-notifications      | mako                     | mako               | mako-notifier/mako
 music: DAW         | -                        | reaper             | -
 music: DAW         | ardour9/ardour8/ardour   | ardour             | ardour
 music: amp sim     | guitarix                 | guitarix           | guitarix
@@ -137,11 +145,15 @@ GTK4 theme script  | python3-gobject          | python-gobject     | python3-gi
 dark mode for GTK4 | xdg-desktop-portal-gtk   | xdg-desktop-portal-gtk | xdg-desktop-portal-gtk
 '
 
-# What building sfwbar from source needs (only installed if it's built).
-sfwbar_build_deps_dnf="gcc meson ninja-build pkgconf-pkg-config curl tar
-  gtk3-devel gtk-layer-shell-devel json-c-devel wayland-devel wayland-protocols-devel"
-sfwbar_build_deps_apt="build-essential meson ninja-build pkg-config curl ca-certificates
-  libgtk-3-dev libgtk-layer-shell-dev libjson-c-dev libwayland-dev wayland-protocols"
+# What building Quickshell from source needs on Debian/Ubuntu (only installed
+# if it's built): Debian's own Build-Depends for it, minus cpptrace (the
+# crash reporter is left out with -DCRASH_HANDLER=OFF).
+quickshell_build_deps_apt="build-essential cmake ninja-build pkgconf curl ca-certificates
+  qt6-base-dev qt6-base-private-dev qt6-declarative-dev qt6-declarative-private-dev
+  qt6-wayland-dev qt6-wayland-private-dev qt6-shadertools-dev libcli11-dev
+  libwayland-dev wayland-protocols libpipewire-0.3-dev libpam0g-dev
+  libpolkit-agent-1-dev libpolkit-gobject-1-dev libglib2.0-dev libdrm-dev libgbm-dev
+  libjemalloc-dev libegl-dev libgles-dev libvulkan-dev libxcb1-dev spirv-tools"
 
 # What building the cargo: crates needs (only installed if one is built):
 # PipeWire headers and clang for wiremix, D-Bus for bluetui, libpulse and
@@ -184,6 +196,45 @@ in_aur() {
 
 echo "Package manager: $pm${aur_helper:+ (AUR via $aur_helper)}"
 [ $as_root -eq 1 ] && echo "Running as root: afterwards, run install.sh as your normal user."
+
+# Quickshell 0.3 isn't in every distro's default repos. Add the repo that has
+# it, before the package lists are refreshed and the names checked.
+. /etc/os-release 2>/dev/null || true
+setup_quickshell_repo() {
+  [[ $skip == *",quickshell,"* ]] && return 0
+  case $pm in
+    dnf)
+      # Fedora's own quickshell is a 0.2 snapshot, without the workspace
+      # support the bar's pager uses; the COPR follows Quickshell's releases.
+      ls /etc/yum.repos.d/ 2>/dev/null | grep -q 'errornointernet:quickshell' && return 0
+      echo
+      if [ $dry_run -eq 1 ]; then
+        echo "Would enable the errornointernet/quickshell COPR (Fedora's own Quickshell is too old)."
+        return 0
+      fi
+      echo "Enabling the errornointernet/quickshell COPR (Fedora's own Quickshell is too old)..."
+      $sudo dnf install $confirm 'dnf-command(copr)' &&
+        $sudo dnf copr enable $confirm errornointernet/quickshell ||
+        echo "Couldn't enable the COPR; Fedora's own (older) Quickshell will be used." >&2
+      ;;
+    apt)
+      # Debian 13 has Quickshell only in backports. (12 and older have a Qt
+      # too old for it.)
+      [ "${ID:-}" = debian ] && [ "${VERSION_CODENAME:-}" = trixie ] || return 0
+      grep -rqs 'trixie-backports' /etc/apt/sources.list /etc/apt/sources.list.d/ && return 0
+      echo
+      if [ $dry_run -eq 1 ]; then
+        echo "Would enable trixie-backports (Debian 13 has Quickshell only there)."
+        return 0
+      fi
+      echo "Enabling trixie-backports (Debian 13 has Quickshell only there)..."
+      printf '%s\n' "Types: deb" "URIs: http://deb.debian.org/debian" "Suites: trixie-backports" \
+        "Components: main" "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg" |
+        $sudo tee /etc/apt/sources.list.d/trixie-backports.sources >/dev/null
+      ;;
+  esac
+}
+setup_quickshell_repo
 
 # Refresh the package lists first: on a fresh install they can be missing,
 # which would make every name look unavailable.
@@ -253,12 +304,12 @@ for line in "${rows[@]}"; do
       fi
     done
   fi
-  if [ -z "$found" ] && [ "$names" = sfwbar ] && [ "$pm" != pacman ]; then
-    found=sfwbar
-    if command -v sfwbar >/dev/null && [ "$(cat "$sfwbar_stamp" 2>/dev/null)" = "$sfwbar_tag" ]; then
-      report+=("ok|$what|sfwbar $sfwbar_tag (installed, built from source)")
+  if [ -z "$found" ] && [ "$names" = quickshell ] && [ "$pm" = apt ]; then
+    found=quickshell
+    if command -v quickshell >/dev/null && [ "$(cat "$quickshell_stamp" 2>/dev/null)" = "$quickshell_tag" ]; then
+      report+=("ok|$what|quickshell $quickshell_tag (installed, built from source)")
     else
-      src_pkgs+=(sfwbar); report+=("src|$what|sfwbar $sfwbar_tag (built from source)")
+      src_pkgs+=(quickshell); report+=("src|$what|quickshell $quickshell_tag (built from source)")
     fi
   fi
   # cargo installs into the user's home, so not as root.
@@ -282,16 +333,6 @@ for line in "${rows[@]}"; do
   fi
 done
 [ $tty -eq 1 ] && printf '\r\033[K'
-
-# install.sh builds tuimenu (src/tuimenu) with cargo. Only install a Rust
-# toolchain if there's no cargo at all: on Arch, rustup (e.g. CachyOS's
-# default) conflicts with the rust package.
-need_cargo=0
-if ! command -v cargo >/dev/null; then
-  need_cargo=1
-  case $pm in dnf|apt) cargo_pkg=cargo ;; pacman) cargo_pkg=rust ;; esac
-  report+=("ok|rust toolchain|$cargo_pkg (install.sh builds tuimenu with it)")
-fi
 
 echo
 for r in "${report[@]}"; do
@@ -324,19 +365,14 @@ echo
 echo "Installing${confirm:+ (not asking to confirm)}..."
 if [ ${#repo_pkgs[@]} -gt 0 ]; then
   case $pm in
-    dnf)    $sudo dnf install $confirm "${repo_pkgs[@]}" ;;
+    # upgrade as well: a Quickshell installed from Fedora's repo before the
+    # COPR was added is otherwise left at the older version.
+    dnf)    $sudo dnf install $confirm "${repo_pkgs[@]}"
+            [[ " ${repo_pkgs[*]} " == *" quickshell "* ]] && $sudo dnf upgrade -q $confirm quickshell ;;
     # -Su as well: installing without upgrading after -Sy leaves a partial
     # upgrade, which Arch doesn't support.
     pacman) $sudo pacman -Su --needed $confirm "${repo_pkgs[@]}" ;;
     apt)    $sudo apt-get install $confirm "${repo_pkgs[@]}" ;;
-  esac
-fi
-
-if [ $need_cargo -eq 1 ] && ! command -v cargo >/dev/null; then
-  case $pm in
-    dnf)    $sudo dnf install $confirm cargo ;;
-    pacman) $sudo pacman -S --needed $confirm rust ;;
-    apt)    $sudo apt-get install $confirm cargo ;;
   esac
 fi
 
@@ -360,24 +396,24 @@ done
 
 if [ ${#src_pkgs[@]} -gt 0 ]; then
   echo
-  echo "Building sfwbar $sfwbar_tag from source (it isn't packaged here)..."
-  case $pm in
-    dnf) $sudo dnf install $confirm $sfwbar_build_deps_dnf ;;
-    apt) $sudo apt-get install $confirm $sfwbar_build_deps_apt ;;
-  esac
-  src="$build_dir/sfwbar-$sfwbar_tag"
+  echo "Building Quickshell $quickshell_tag from source (it isn't packaged here)..."
+  $sudo apt-get install $confirm $quickshell_build_deps_apt
+  src="$build_dir/quickshell-$quickshell_tag"
   rm -rf "$src" && mkdir -p "$src"
-  curl -fsSL "https://github.com/LBCrion/sfwbar/archive/refs/tags/$sfwbar_tag.tar.gz" |
+  curl -fsSL "https://github.com/quickshell-mirror/quickshell/archive/refs/tags/$quickshell_tag.tar.gz" |
     tar -xz -C "$src" --strip-components=1
-  # Only the core: the config uses no optional modules (see sfwbar.config).
-  meson setup "$src/build" "$src" --prefix=/usr/local --buildtype=release \
-    -Dauto_features=disabled
-  ninja -C "$src/build"
-  $sudo ninja -C "$src/build" install
+  # Every feature, as Debian builds it, except the crash reporter (it needs
+  # cpptrace, which isn't packaged everywhere). The QML modules are built into
+  # the binary, so /usr/local works.
+  cmake -GNinja -S "$src" -B "$src/build" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local -DCRASH_HANDLER=OFF \
+    -DDISTRIBUTOR="Crimson Dark dotfiles (built from source)"
+  cmake --build "$src/build"
+  $sudo cmake --install "$src/build"
   $sudo ldconfig
-  mkdir -p "$(dirname "$sfwbar_stamp")"
-  echo "$sfwbar_tag" > "$sfwbar_stamp"
-  echo "sfwbar installed to /usr/local."
+  mkdir -p "$(dirname "$quickshell_stamp")"
+  echo "$quickshell_tag" > "$quickshell_stamp"
+  echo "Quickshell installed to /usr/local."
 fi
 
 cargo_failed=()

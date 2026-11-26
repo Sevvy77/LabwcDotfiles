@@ -6,8 +6,7 @@
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
 #   - the GTK theme and dark style for every GTK app (also GSettings)
 #   - Firefox userChrome/userContent (the profile directory name is random)
-# and the parts that are built or downloaded:
-#   - tuimenu, built with cargo from this repo's patched copy (src/tuimenu)
+# and the part that is downloaded:
 #   - zjstatus, the tab bar plugin System Controls uses in zellij (a pinned
 #     release, checked against its sha256; not stored in the repo)
 #
@@ -23,8 +22,7 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (config directories in this
 #                                  # repo and/or the extras: galculator
-#                                  # gtk mousepad firefox tuimenu-build
-#                                  # zjstatus)
+#                                  # gtk mousepad firefox zjstatus)
 #        ./install.sh --force      # replace files that differ, keeping .bak
 #        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
@@ -44,10 +42,15 @@ retired=(
   .local/share/applications/org.pulseaudio.pavucontrol.desktop  # now crimson-volume.desktop (wiremix)
   .local/share/applications/blueman-manager.desktop        # now crimson-bluetooth.desktop (bluetui)
   .local/share/applications/blueman-adapters.desktop
+  .config/tuimenu/list.json                                # tuimenu, dropped (System Controls is zellij)
+  .config/sfwbar/sfwbar.config                             # now the Quickshell bar (quickshell/)
+  .config/fuzzel/fuzzel.ini                                # now the Quickshell launcher
+  .config/gtklock/style.css                                # now the Quickshell lock screen
+  .config/mako/config                                      # now the Quickshell notifications
 )
 
-files_all=(labwc sfwbar fuzzel alacritty mako wiremix zellij tuimenu fastfetch bin themes applications bash fish gtk3 gtk4 gtklock gtksourceview dbus systemd)
-extras_all=(gtk galculator mousepad firefox tuimenu-build zjstatus)
+files_all=(labwc quickshell alacritty wiremix zellij fastfetch bin themes applications bash fish gtk3 gtk4 gtksourceview dbus systemd)
+extras_all=(gtk galculator mousepad firefox zjstatus)
 
 # zjstatus release for System Controls' tab bar, and its sha256 (the digest
 # GitHub publishes for that release's zjstatus.wasm).
@@ -154,6 +157,8 @@ retire() {
     [ -n "${baseline[$dst]:-}" ] || continue
     if [ -f "$dst" ] && [ "$(sha "$dst")" = "${baseline[$dst]}" ]; then
       rm "$dst"
+      # Its directory too, if that leaves it empty (e.g. ~/.config/sfwbar).
+      rmdir "$(dirname "$dst")" 2>/dev/null || true
       removed=$((removed + 1))
       [ $verbose -eq 1 ] && printf '      %s: removed (no longer in the repo)\n' "$(tilde "$dst")"
     elif [ -f "$dst" ]; then
@@ -262,9 +267,11 @@ install_gtk() {
 gtk-theme OB-Crimson-Dark
 icon-theme Crimson-Wine
 color-scheme prefer-dark
+cursor-theme Adwaita
 EOF
   if [ $failed -eq 0 ]; then
-    echo "gtk: theme set to OB-Crimson-Dark with Crimson-Wine icons, dark style preferred."
+    echo "gtk: theme set to OB-Crimson-Dark with Crimson-Wine icons and the Adwaita"
+    echo "     cursor (as labwc's environment sets), dark style preferred."
   else
     echo "gtk: couldn't save the GTK theme settings (no D-Bus session yet?)." >&2
     echo "     Log out and in again, then run: ./install.sh gtk" >&2
@@ -322,32 +329,20 @@ install_firefox() {
   echo "firefox: installed into $p (restart Firefox to apply)."
 }
 
-# tuimenu: built from src/tuimenu (a Crimson Dark restyle of tuimenu 0.0.2,
-# see its README) into ~/.local/bin. Rebuilt only when that source changes.
-install_tuimenu-build() {
-  local src="$repo/src/tuimenu" bin="$HOME/.local/bin/tuimenu"
-  local stamp="$state_dir/tuimenu-src.sha256" want
-  want=$(cd "$src" && find Cargo.toml Cargo.lock src -type f -print0 | sort -z |
-         xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
-  if [ -x "$bin" ] && [ "$(cat "$stamp" 2>/dev/null)" = "$want" ]; then
-    echo "tuimenu: up to date."
-    return
-  fi
-  if ! command -v cargo >/dev/null; then
-    echo "tuimenu: needs cargo to build; run ./install-packages.sh, then ./install.sh tuimenu-build" >&2
-    return
-  fi
-  # Its own target dir, so building doesn't leave files in the repo.
-  if cargo install --quiet --locked --force --root "$HOME/.local" \
-       --target-dir "${XDG_CACHE_HOME:-$HOME/.cache}/crimson-dotfiles/tuimenu-target" \
-       --path "$src"; then
-    mkdir -p "$state_dir"
-    echo "$want" > "$stamp"
-    echo "tuimenu: built from src/tuimenu into ~/.local/bin."
+# tuimenu used to be built from src/tuimenu into ~/.local/bin. Remove the
+# copy an earlier run built (only if its build stamp shows this script made it).
+remove_tuimenu() {
+  local stamp="$state_dir/tuimenu-src.sha256"
+  [ -f "$stamp" ] || return 0
+  if command -v cargo >/dev/null; then
+    cargo uninstall --quiet --root "$HOME/.local" tuimenu 2>/dev/null || rm -f "$HOME/.local/bin/tuimenu"
   else
-    echo "tuimenu: the build failed (see above). It needs Rust 1.85 or newer;" >&2
-    echo "         rustup (https://rustup.rs) gets you a current one." >&2
+    rm -f "$HOME/.local/bin/tuimenu"
   fi
+  rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/crimson-dotfiles/tuimenu-target"
+  rm -f "$stamp"
+  rmdir "$HOME/.config/tuimenu" 2>/dev/null || true
+  echo "tuimenu: removed (no longer part of these dotfiles)."
 }
 
 install_zjstatus() {
@@ -400,6 +395,7 @@ if [ ${#extras[@]} -gt 0 ]; then
   echo
 fi
 
+remove_tuimenu
 mkdir -p "$HOME/Pictures"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 # Let the session bus see the D-Bus overrides (Nautilus, Clocks) without logging out.
@@ -413,7 +409,8 @@ To start the desktop:
   - From a TTY: log in and run labwc.
   - From a display manager (GDM, SDDM...): log out and pick "labwc" as the
     session.
-  - If labwc is already running: labwc -r, then restart sfwbar.
+  - If labwc is already running: labwc -r, then stop sfwbar (pkill sfwbar)
+    and mako (pkill mako), and start the new shell: quickshell -n -d
 
 Optional:
   - A wallpaper at ~/Pictures/wallpaper.png (otherwise a plain background).

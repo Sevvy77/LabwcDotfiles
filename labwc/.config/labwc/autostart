@@ -30,7 +30,9 @@ for agent in /usr/libexec/polkit-mate-authentication-agent-1 \
   if [ -x "$agent" ]; then "$agent" & break; fi
 done
 
-sfwbar &
+# The bar, the launcher (Super+k) and the lock screen (Super+l), all one
+# Quickshell config: ~/.config/quickshell.
+quickshell --no-duplicate &
 alacritty &
 # Debian's Firefox is firefox-esr.
 for browser in firefox firefox-esr; do

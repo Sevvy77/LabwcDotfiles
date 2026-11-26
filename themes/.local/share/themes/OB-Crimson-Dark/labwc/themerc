@@ -5,11 +5,11 @@
 # Palette
 #   #140c0d bar/tooltip   #1a1012 chrome   #2e1b1e surface
 #   #7a5a5e muted text    #f5e9e6 bright text
-#   #c0303a crimson       #e5484d hot red  #e0a867 amber
+#   #9b2730 crimson       #e5484d hot red  #e0a867 amber
 
 # Frame
 border.width: 2
-window.active.border.color: #c0303a
+window.active.border.color: #9b2730
 window.inactive.border.color: #2e1b1e
 window.active.title.bg.color: #1a1012
 window.inactive.title.bg.color: #1a1012
@@ -22,7 +22,7 @@ window.inactive.label.text.color: #7a5a5e
 # Buttons: one colour per function when focused, all dimmed when not
 window.active.button.unpressed.image.color: #f5e9e6
 window.active.button.iconify.unpressed.image.color: #e0a867
-window.active.button.max.unpressed.image.color: #c0303a
+window.active.button.max.unpressed.image.color: #9b2730
 window.active.button.close.unpressed.image.color: #e5484d
 window.inactive.button.unpressed.image.color: #2e1b1e
 window.button.hover.bg.color: #e5484d33
@@ -37,7 +37,7 @@ menu.title.text.color: #e5484d
 menu.title.text.justify: center
 menu.items.bg.color: #1a1012
 menu.items.text.color: #f5e9e6
-menu.items.active.bg.color: #c0303a
+menu.items.active.bg.color: #9b2730
 menu.items.active.text.color: #f5e9e6
 menu.separator.width: 1
 menu.separator.padding.width: 0
@@ -49,5 +49,5 @@ osd.bg.color: #1a1012
 osd.border.color: #2e1b1e
 osd.border.width: 6
 osd.label.text.color: #f5e9e6
-osd.window-switcher.style-classic.item.active.border.color: #c0303a
-osd.window-switcher.style-classic.item.active.bg.color: #c0303a40
+osd.window-switcher.style-classic.item.active.border.color: #9b2730
+osd.window-switcher.style-classic.item.active.bg.color: #9b273040

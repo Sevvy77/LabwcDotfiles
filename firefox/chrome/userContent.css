@@ -10,23 +10,23 @@
     --newtab-element-secondary-hover-color: #4a2a2f !important;
     --newtab-button-static-background: #2e1b1e !important;
     --newtab-button-static-hover-background: #3a2226 !important;
-    --newtab-button-static-active-background: #c0303a !important;
-    --newtab-primary-action-background-pocket: #c0303a !important;
+    --newtab-button-static-active-background: #9b2730 !important;
+    --newtab-primary-action-background-pocket: #9b2730 !important;
     --newtab-contextual-text-primary-color: #e8d5d0 !important;
     --newtab-contextual-text-secondary-color: #9a7a7e !important;
-    --newtab-button-focus-border: #c0303a !important;
+    --newtab-button-focus-border: #9b2730 !important;
     --newtab-background-color-secondary: #2e1b1e !important;
     --newtab-text-primary-color: #e8d5d0 !important;
     --newtab-text-secondary-color: #9a7a7e !important;
-    --newtab-primary-action-background: #c0303a !important;
+    --newtab-primary-action-background: #9b2730 !important;
     --newtab-element-hover-color: #3a2226 !important;
-    --newtab-element-active-color: #c0303a !important;
+    --newtab-element-active-color: #9b2730 !important;
     --newtab-button-background: #2e1b1e !important;
     --newtab-button-hover-background: #3a2226 !important;
     --newtab-button-text: #e8d5d0 !important;
     --newtab-border-color: #3a2226 !important;
     --newtab-wordmark-color: #e8d5d0 !important;
-    --color-accent-primary: #c0303a !important;
+    --color-accent-primary: #9b2730 !important;
   }
   body { background-color: #1f1416 !important; color: #e8d5d0 !important; }
 }

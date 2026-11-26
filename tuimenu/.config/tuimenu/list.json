@@ -1,5 +1,0 @@
-[
-  { "cmd": "bluetui",  "desc": "Bluetooth" },
-  { "cmd": "nmrs-tui", "desc": "Networks" },
-  { "cmd": "wiremix",  "desc": "Volume Control" }
-]

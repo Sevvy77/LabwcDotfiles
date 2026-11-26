@@ -2,10 +2,10 @@
    mode (Nautilus, Clocks are forced dark); light-mode apps are untouched. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --accent-bg-color: #c0303a;
+    --accent-bg-color: #9b2730;
     --accent-fg-color: #f5e9e6;
     --accent-color: #ff7a7f;
-    --destructive-bg-color: #8f2530;
+    --destructive-bg-color: #731d24;
     --destructive-fg-color: #f5e9e6;
     --destructive-color: #ff7a7f;
 
@@ -32,6 +32,6 @@
     --popover-fg-color: #e8d5d0;
     --thumbnail-bg-color: #2e1b1e;
     --thumbnail-fg-color: #e8d5d0;
-    --border-color: rgba(192, 48, 58, 0.25);
+    --border-color: rgba(155, 39, 48, 0.25);
   }
 }

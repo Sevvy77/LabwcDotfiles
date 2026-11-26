@@ -3,3 +3,7 @@ XKB_DEFAULT_LAYOUT=us
 XDG_SESSION_TYPE=wayland
 GDK_BACKEND=wayland,x11
 QT_QPA_PLATFORM=wayland
+# One cursor theme everywhere: labwc itself, and apps that would otherwise
+# pick their own (so the pointer doesn't change from window to window)
+XCURSOR_THEME=Adwaita
+XCURSOR_SIZE=24

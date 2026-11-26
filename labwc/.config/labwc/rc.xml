@@ -1,5 +1,5 @@
 <labwc_config>
-  <!-- Named rather than numbered, so sfwbar's pager shows "1" instead of
+  <!-- Named rather than numbered, so the bar's pager shows "1" instead of
        "Workspace 1" -->
   <desktops>
     <names>
@@ -33,8 +33,9 @@
     <keybind key="W-j">
       <action name="Close" />
     </keybind>
+    <!-- Lock screen and launcher: the Quickshell config started by autostart -->
     <keybind key="W-l" onRelease="yes">
-      <action name="Execute" command="gtklock" />
+      <action name="Execute" command="quickshell ipc call lock lock" />
     </keybind>
     <keybind key="W-semicolon" onRelease="yes">
       <action name="Execute" command="nautilus" />
@@ -58,7 +59,7 @@
       </action>
     </keybind>
     <keybind key="W-k" onRelease="yes">
-      <action name="Execute" command="fuzzel" />
+      <action name="Execute" command="quickshell ipc call launcher toggle" />
     </keybind>
     <keybind key="C-A-Delete">
       <action name="Exit" />

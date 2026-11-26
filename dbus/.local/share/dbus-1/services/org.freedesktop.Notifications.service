@@ -1,0 +1,9 @@
+# Notifications are shown by the Quickshell config (~/.config/quickshell),
+# which takes this name when labwc starts it. This file, in your home
+# directory, takes precedence over the mako package's (fr.emersion.mako.service),
+# so D-Bus never starts mako to take the name first, e.g. for a notification
+# sent at login before Quickshell is up. Delete it to let mako be started
+# again.
+[D-BUS Service]
+Name=org.freedesktop.Notifications
+Exec=/bin/false

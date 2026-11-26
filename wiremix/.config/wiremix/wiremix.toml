@@ -19,7 +19,7 @@ node_title = { }
 node_target = { fg = "#7a5a5e" }
 volume = { }
 volume_empty = { fg = "#3a2528" }
-volume_filled = { fg = "#c0303a" }
+volume_filled = { fg = "#9b2730" }
 meter_inactive = { fg = "#3a2528" }
 meter_active = { fg = "#e0a867" }
 meter_overload = { fg = "#e5484d" }
@@ -28,10 +28,10 @@ meter_center_active = { fg = "#e0a867" }
 config_device = { }
 config_profile = { fg = "#7a5a5e" }
 dropdown_icon = { fg = "#e5484d" }
-dropdown_border = { fg = "#c0303a" }
+dropdown_border = { fg = "#9b2730" }
 dropdown_item = { }
 dropdown_selected = { fg = "#f5e9e6", bg = "#3a2226", add_modifier = "BOLD" }
 dropdown_more = { fg = "#7a5a5e" }
-help_border = { fg = "#c0303a" }
+help_border = { fg = "#9b2730" }
 help_item = { }
 help_more = { fg = "#7a5a5e" }
