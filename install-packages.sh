@@ -93,6 +93,7 @@ compositor         | labwc                    | labwc              | labwc
 login screen entry | labwc-session            | -                  | -
 graphics drivers   | mesa-dri-drivers         | mesa               | libgl1-mesa-dri
 bar, launcher, lock | quickshell              | quickshell         | quickshell
+shell: Qt on Wayland | qt6-qtwayland          | qt6-wayland        | qt6-wayland
 shell: SVG icons   | qt6-qtsvg                | qt6-svg            | qt6-svg-plugins
 shell: QML         | -                        | -                  | qml6-module-qtquick
 shell: QML layouts | -                        | -                  | qml6-module-qtquick-layouts
@@ -113,6 +114,8 @@ audio server       | pipewire                 | pipewire           | pipewire
 audio session      | wireplumber              | wireplumber        | wireplumber
 audio for apps     | pipewire-pulseaudio      | pipewire-pulse     | pipewire-pulse
 bluetooth service  | bluez                    | bluez              | bluez
+network service    | NetworkManager           | networkmanager     | network-manager
+downloads          | curl                     | curl               | curl
 interface font     | dejavu-sans-fonts        | ttf-dejavu         | fonts-dejavu-core
 terminal font      | jetbrains-mono-fonts-all | ttf-jetbrains-mono | fonts-jetbrains-mono
 icons              | adwaita-icon-theme       | adwaita-icon-theme | adwaita-icon-theme
@@ -161,6 +164,8 @@ quickshell_build_deps_apt="build-essential cmake ninja-build pkgconf curl ca-cer
 cargo_build_deps_dnf="cargo gcc pkgconf-pkg-config clang pipewire-devel dbus-devel
   pulseaudio-libs-devel alsa-lib-devel"
 cargo_build_deps_pacman="rust base-devel clang"
+# The oldest Rust the cargo: crates build with (nmrs-tui needs 1.96).
+rust_min=1.96
 cargo_build_deps_apt="cargo build-essential pkg-config clang libpipewire-0.3-dev libspa-0.2-dev
   libdbus-1-dev libpulse-dev libasound2-dev"
 # Extra cargo features: scope-tui only reads PulseAudio (which PipeWire
@@ -201,9 +206,9 @@ echo "Package manager: $pm${aur_helper:+ (AUR via $aur_helper)}"
 # it, before the package lists are refreshed and the names checked.
 . /etc/os-release 2>/dev/null || true
 setup_quickshell_repo() {
-  [[ $skip == *",quickshell,"* ]] && return 0
   case $pm in
     dnf)
+      [[ $skip == *",quickshell,"* ]] && return 0
       # Fedora's own quickshell is a 0.2 snapshot, without the workspace
       # support the bar's pager uses; the COPR follows Quickshell's releases.
       ls /etc/yum.repos.d/ 2>/dev/null | grep -q 'errornointernet:quickshell' && return 0
@@ -218,16 +223,16 @@ setup_quickshell_repo() {
         echo "Couldn't enable the COPR; Fedora's own (older) Quickshell will be used." >&2
       ;;
     apt)
-      # Debian 13 has Quickshell only in backports. (12 and older have a Qt
-      # too old for it.)
+      # Debian 13 has Quickshell only in backports, and the Rust that
+      # nmrs-tui needs. (12 and older have a Qt too old for Quickshell.)
       [ "${ID:-}" = debian ] && [ "${VERSION_CODENAME:-}" = trixie ] || return 0
       grep -rqs 'trixie-backports' /etc/apt/sources.list /etc/apt/sources.list.d/ && return 0
       echo
       if [ $dry_run -eq 1 ]; then
-        echo "Would enable trixie-backports (Debian 13 has Quickshell only there)."
+        echo "Would enable trixie-backports (Debian 13 has Quickshell and a new enough Rust only there)."
         return 0
       fi
-      echo "Enabling trixie-backports (Debian 13 has Quickshell only there)..."
+      echo "Enabling trixie-backports (Debian 13 has Quickshell and a new enough Rust only there)..."
       printf '%s\n' "Types: deb" "URIs: http://deb.debian.org/debian" "Suites: trixie-backports" \
         "Components: main" "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg" |
         $sudo tee /etc/apt/sources.list.d/trixie-backports.sources >/dev/null
@@ -424,8 +429,25 @@ if [ ${#cargo_pkgs[@]} -gt 0 ]; then
   case $pm in
     dnf)    $sudo dnf install $confirm ${!deps_var} ;;
     pacman) $sudo pacman -S --needed $confirm ${!deps_var} ;;
-    apt)    $sudo apt-get install $confirm ${!deps_var} ;;
+    apt)    $sudo apt-get install $confirm ${!deps_var}
+            # Debian 13's own Rust is 1.85; backports has a new enough one.
+            if [ "${ID:-}" = debian ] && [ "${VERSION_CODENAME:-}" = trixie ]; then
+              $sudo apt-get install $confirm -t trixie-backports cargo rustc
+            fi ;;
   esac
+  # Still too old (e.g. Ubuntu 26.04's 1.93)? Use rustup's current stable
+  # Rust instead: it goes in ~/.cargo and ~/.rustup, alongside the distro's.
+  rust_ver=$(rustc --version 2>/dev/null | awk '{print $2}')
+  if [ "$(printf '%s\n' "$rust_min" "${rust_ver:-0}" | sort -V | head -n1)" != "$rust_min" ]; then
+    echo
+    echo "Rust ${rust_ver:-(none)} is older than the $rust_min these need; installing rustup's stable Rust..."
+    if ! command -v rustup >/dev/null && [ ! -x "$HOME/.cargo/bin/rustup" ]; then
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+        sh -s -- --no-modify-path --profile minimal $([ $yes -eq 1 ] && echo -y)
+    fi
+    export PATH="$HOME/.cargo/bin:$PATH"
+    rustup default stable
+  fi
   for c in "${cargo_pkgs[@]}"; do
     features=$(cargo_features "$c")
     echo
@@ -437,9 +459,7 @@ if [ ${#cargo_pkgs[@]} -gt 0 ]; then
   done
   if [ ${#cargo_failed[@]} -gt 0 ]; then
     echo
-    echo "Couldn't build: ${cargo_failed[*]}. If cargo said the crate needs a newer"
-    echo "Rust than your distro's, install rustup (https://rustup.rs), run"
-    echo "'rustup default stable', and re-run this script."
+    echo "Couldn't build: ${cargo_failed[*]} (see cargo's errors above)."
   fi
   case ":$PATH:" in
     *":$HOME/.local/bin:"*) ;;

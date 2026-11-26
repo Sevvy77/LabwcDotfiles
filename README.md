@@ -138,8 +138,9 @@ Quickshell needs version 0.3 or newer:
 | Ubuntu 26.04        | built from source (takes a while)         |
 
 Terminal apps your distro doesn't package are built with `cargo` into
-`~/.local/bin`. nmrs-tui needs Rust 1.96+; [rustup](https://rustup.rs) gets
-you one if your distro's is older.
+`~/.local/bin`. They need Rust 1.96+: Debian 13 gets it from backports, and
+where the distro's Rust is older (Ubuntu 26.04) the script installs
+[rustup](https://rustup.rs)'s.
 
 On Ubuntu, clone to `~/dotfiles`, not `~/.dotfiles`: the snap Firefox can't
 read hidden directories.
@@ -193,6 +194,10 @@ merge the `.new` files yourself.
 - The bar's window tabs list every window, whatever workspace you're on
   (labwc doesn't share that).
 - No idle lock: the screen only locks with Super+l.
+- Network (nmrs-tui) needs NetworkManager running. The script installs it
+  but doesn't enable it, so on a system that uses something else (Ubuntu
+  Server, a Debian install without a desktop, plain Arch), switch to it
+  yourself first.
 
 ## License
 
