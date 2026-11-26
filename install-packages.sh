@@ -160,13 +160,14 @@ quickshell_build_deps_apt="build-essential cmake ninja-build pkgconf curl ca-cer
 
 # What building the cargo: crates needs (only installed if one is built):
 # PipeWire headers and clang for wiremix, D-Bus for bluetui, libpulse and
-# ALSA for scope-tui. Arch's packages ship headers.
-cargo_build_deps_dnf="cargo gcc pkgconf-pkg-config clang pipewire-devel dbus-devel
+# ALSA for scope-tui, perl and make for the OpenSSL that zellij builds
+# itself. Arch's packages ship headers.
+cargo_build_deps_dnf="cargo gcc pkgconf-pkg-config clang pipewire-devel dbus-devel perl make
   pulseaudio-libs-devel alsa-lib-devel"
 cargo_build_deps_pacman="rust base-devel clang"
 # The oldest Rust the cargo: crates build with (nmrs-tui needs 1.96).
 rust_min=1.96
-cargo_build_deps_apt="cargo build-essential pkg-config clang libpipewire-0.3-dev libspa-0.2-dev
+cargo_build_deps_apt="cargo build-essential pkg-config clang libpipewire-0.3-dev libspa-0.2-dev perl
   libdbus-1-dev libpulse-dev libasound2-dev"
 # Extra cargo features: scope-tui only reads PulseAudio (which PipeWire
 # provides) with this one.
@@ -442,8 +443,10 @@ if [ ${#cargo_pkgs[@]} -gt 0 ]; then
     echo
     echo "Rust ${rust_ver:-(none)} is older than the $rust_min these need; installing rustup's stable Rust..."
     if ! command -v rustup >/dev/null && [ ! -x "$HOME/.cargo/bin/rustup" ]; then
+      # SKIP_PATH_CHECK: living alongside the distro's Rust is intended, so
+      # don't stop to ask about it.
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
-        sh -s -- --no-modify-path --profile minimal $([ $yes -eq 1 ] && echo -y)
+        RUSTUP_INIT_SKIP_PATH_CHECK=yes sh -s -- --no-modify-path --profile minimal $([ $yes -eq 1 ] && echo -y)
     fi
     export PATH="$HOME/.cargo/bin:$PATH"
     rustup default stable
