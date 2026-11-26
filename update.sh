@@ -2,9 +2,11 @@
 # Brings this desktop up to date with the GitHub repo: gets the latest
 # version, installs any software it now needs (install-packages.sh, which
 # uses sudo and skips what's already installed), then installs it over your
-# config files, replacing any that differ (install.sh --force). Files you'd changed are kept as <file>.bak
-# beside the new version; ~/.config/labwc/autostart.local isn't in the repo,
-# so it's never touched.
+# config files, replacing any that differ (install.sh --force). Files you'd
+# changed are kept as <file>.bak beside the new version, except
+# ~/.config/labwc/autostart: once you've edited it, it's left alone and the
+# repo's version goes beside it as autostart.new. autostart.local isn't in the
+# repo, so it's never touched.
 #
 # Works on Fedora, Arch, CachyOS, Debian and Ubuntu. Uses git when this is a
 # git clone, otherwise downloads the repo with curl or wget (a copy from a

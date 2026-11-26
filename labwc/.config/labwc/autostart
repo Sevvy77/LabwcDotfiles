@@ -34,7 +34,3 @@ done
 # Quickshell config: ~/.config/quickshell.
 quickshell --no-duplicate &
 alacritty &
-# Debian's Firefox is firefox-esr.
-for browser in firefox firefox-esr; do
-  if command -v "$browser" >/dev/null; then "$browser" & break; fi
-done

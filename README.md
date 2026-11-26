@@ -163,7 +163,9 @@ Firefox needs a profile first (start and quit it once, then run
 
 ### update.sh
 
-`git pull`, then `install-packages.sh`, then `install.sh --force`. Takes
+`git pull`, then `install-packages.sh`, then `install.sh --force`. Your
+edited `~/.config/labwc/autostart` is never replaced: the repo's version
+goes beside it as `autostart.new`. Takes
 the same names, `--verbose`, `--yes`, and `--no-packages` to skip the
 software. Use `git pull && ./install.sh` instead to keep your changes and
 merge the `.new` files yourself.

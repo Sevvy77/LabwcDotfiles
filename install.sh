@@ -24,6 +24,7 @@
 #                                  # repo and/or the extras: galculator
 #                                  # gtk mousepad firefox zjstatus)
 #        ./install.sh --force      # replace files that differ, keeping .bak
+#                                  # (except your edited labwc autostart)
 #        ./install.sh --verbose    # also show what happened to every file
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -47,6 +48,13 @@ retired=(
   .config/fuzzel/fuzzel.ini                                # now the Quickshell launcher
   .config/gtklock/style.css                                # now the Quickshell lock screen
   .config/mako/config                                      # now the Quickshell notifications
+)
+
+# Files --force never replaces once you've changed them: they hold settings
+# for one machine (e.g. display scaling in labwc's autostart). Like a normal
+# run, your copy is kept and a newer repo version goes beside it as .new.
+never_forced=(
+  .config/labwc/autostart
 )
 
 files_all=(labwc quickshell alacritty wiremix zellij fastfetch bin themes applications bash fish gtk3 gtk4 gtksourceview dbus systemd)
@@ -125,7 +133,7 @@ place() {
       # Unchanged since we installed it: take the repo's new version.
       cp "$src" "$dst"
       action=updated; n_updated=$((n_updated + 1))
-    elif [ $force -eq 1 ]; then
+    elif [ $force -eq 1 ] && [[ " ${never_forced[*]/#/$HOME/} " != *" $dst "* ]]; then
       mv "$dst" "$dst.bak"
       cp "$src" "$dst"
       backed_up+=("$dst")
