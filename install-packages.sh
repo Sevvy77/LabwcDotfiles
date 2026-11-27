@@ -150,6 +150,7 @@ image editor       | gimp                     | gimp               | gimp
 CAD                | freecad                  | freecad            | freecad
 GTK4 theme script  | python3-gobject          | python-gobject     | python3-gi
 dark mode for GTK4 | xdg-desktop-portal-gtk   | xdg-desktop-portal-gtk | xdg-desktop-portal-gtk
+system monitor     | btop                     | btop               | btop
 '
 
 # What building Quickshell from source needs on Debian/Ubuntu (only installed

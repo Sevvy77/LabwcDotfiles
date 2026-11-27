@@ -1,0 +1,60 @@
+# Crimson Dark: btop theme
+# Palette shared with labwc themerc, alacritty and quickshell Theme.qml.
+
+# Background and text
+theme[main_bg]="#1f1416"
+theme[main_fg]="#e8d5d0"
+theme[title]="#f5e9e6"
+theme[hi_fg]="#e5484d"
+theme[inactive_fg]="#7a5a5e"
+theme[graph_text]="#8c7470"
+theme[meter_bg]="#2e1b1e"
+theme[proc_misc]="#e0a867"
+
+# Selected row
+theme[selected_bg]="#3a2226"
+theme[selected_fg]="#f5e9e6"
+
+# Box outlines
+theme[cpu_box]="#9b2730"
+theme[mem_box]="#7c1f26"
+theme[net_box]="#7c1f26"
+theme[proc_box]="#9b2730"
+theme[div_line]="#2e1b1e"
+
+# Gradients: dark crimson -> hot red -> amber
+theme[temp_start]="#9b2730"
+theme[temp_mid]="#e5484d"
+theme[temp_end]="#e0a867"
+
+theme[cpu_start]="#9b2730"
+theme[cpu_mid]="#e5484d"
+theme[cpu_end]="#ff7a7f"
+
+theme[free_start]="#3a2528"
+theme[free_mid]="#7a5a5e"
+theme[free_end]="#a3b07a"
+
+theme[cached_start]="#3a2528"
+theme[cached_mid]="#7f9cb4"
+theme[cached_end]="#86b0a8"
+
+theme[available_start]="#3a2528"
+theme[available_mid]="#c77da0"
+theme[available_end]="#e8d5d0"
+
+theme[used_start]="#7c1f26"
+theme[used_mid]="#e5484d"
+theme[used_end]="#ff7a7f"
+
+theme[download_start]="#7c1f26"
+theme[download_mid]="#e5484d"
+theme[download_end]="#ff7a7f"
+
+theme[upload_start]="#9b2730"
+theme[upload_mid]="#e0a867"
+theme[upload_end]="#f5e9e6"
+
+theme[process_start]="#9b2730"
+theme[process_mid]="#e5484d"
+theme[process_end]="#e0a867"

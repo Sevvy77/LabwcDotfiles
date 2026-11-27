@@ -40,7 +40,7 @@ Rectangle {
         id: mouse
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: Quickshell.execDetached([Theme.terminal, "-e", "top"])
+        onClicked: Quickshell.execDetached([Theme.terminal, "-e", "btop"])
     }
 
     BarTooltip {
