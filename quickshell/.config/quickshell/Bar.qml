@@ -1,6 +1,7 @@
-// The bottom bar, one per output. Left to right, as sfwbar had it: clock
-// (click for the calendar), workspaces, window tabs, CPU and memory graphs
-// (click for top), tray.
+// The bottom bar, one per output (or only the outputs picked in
+// ~/.config/crimson/bar-outputs; see shell.qml). Left to right, as sfwbar
+// had it: clock (click for the calendar), workspaces, window tabs, CPU and
+// memory graphs (click for top), tray.
 
 import QtQuick
 import QtQuick.Layouts

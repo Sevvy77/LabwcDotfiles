@@ -19,7 +19,7 @@ layout {
                 color_crimson "#e5484d"
 
                 format_left   "{tabs}"
-                format_right  "#[fg=$muted]alt ←→ switch  ·  alt q quit "
+                format_right  "#[fg=$muted]alt j k l ; tabs  ·  alt q quit "
                 format_space  "#[bg=$bg]"
 
                 border_enabled  "true"
@@ -42,5 +42,8 @@ layout {
     }
     tab name="󰕾 Volume Control" {
         pane command="wiremix"
+    }
+    tab name="󰍹 Bar" {
+        pane command="crimson-bar-outputs"
     }
 }

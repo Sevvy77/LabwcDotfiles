@@ -1,8 +1,10 @@
 #!/bin/sh
-# System Controls: Bluetooth (bluetui), Networks (nmrs-tui) and Volume
-# Control (wiremix) as tabs of one zellij session. Opened by Super+o and
+# System Controls: Bluetooth (bluetui), Networks (nmrs-tui), Volume
+# Control (wiremix) and Bar (crimson-bar-outputs: which monitors show the
+# bar) as tabs of one zellij session. Opened by Super+o and
 # crimson-controls.desktop, in an alacritty window of class crimson-controls.
-# Alt+←/→ (or Alt+h/l, Alt+1-3, or a click) switches tabs; Alt+q quits.
+# Alt+j/k/l/; goes to a tab (the same keys as workspaces, which are
+# Super+Ctrl+j/k/l/;), Alt+←/→ or a click switches tabs; Alt+q quits.
 cfg="$HOME/.config/zellij/system-controls.kdl"
 layouts="$HOME/.config/zellij/layouts"
 

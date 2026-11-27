@@ -17,6 +17,10 @@
 # already), and on Ubuntu releases that don't package it (26.04) it's built
 # from source into /usr/local.
 #
+# Rust (cargo) is installed if there isn't one yet, as install.sh builds
+# crimson-bar-outputs from this repo with it. One you already have (rustup's,
+# say) is left alone.
+#
 # Safe to re-run (update.sh runs it every time): AUR packages, cargo builds
 # and a from-source Quickshell that are already installed aren't built again.
 #
@@ -470,6 +474,20 @@ if [ ${#cargo_pkgs[@]} -gt 0 ]; then
        echo "Note: ~/.local/bin isn't on your PATH yet. The bash settings from"
        echo "install.sh add it; log out and in again afterwards." ;;
   esac
+fi
+
+# install.sh builds crimson-bar-outputs (the Bar tab of System Controls)
+# from src/, so it needs cargo even when nothing above was built with it.
+# Only installed when there's no cargo at all, so a rustup setup isn't
+# swapped for the distro's (on Arch the two conflict). Rust 1.85 or newer.
+if ! command -v cargo >/dev/null && [ ! -x "$HOME/.cargo/bin/cargo" ]; then
+  echo
+  echo "Installing Rust (install.sh builds crimson-bar-outputs with it)..."
+  case $pm in
+    dnf)    $sudo dnf install $confirm cargo gcc ;;
+    pacman) $sudo pacman -S --needed $confirm rust gcc ;;
+    apt)    $sudo apt-get install $confirm cargo gcc ;;
+  esac || echo "Couldn't install Rust. Install cargo yourself, then run: ./install.sh bar-outputs"
 fi
 
 echo

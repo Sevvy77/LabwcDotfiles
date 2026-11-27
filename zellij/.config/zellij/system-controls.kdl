@@ -2,7 +2,8 @@
 // system-controls script / crimson-controls.desktop). Kept separate from
 // config.kdl so a general-purpose zellij setup can live alongside it.
 
-// Start locked: every key goes straight to bluetui / nmrs-tui / wiremix.
+// Start locked: every key goes straight to bluetui / nmrs-tui / wiremix /
+// crimson-bar-outputs.
 // Only the Alt bindings below (and Ctrl+g to unlock) are kept by zellij.
 default_mode "locked"
 
@@ -21,11 +22,13 @@ session_serialization false
 
 keybinds {
     locked {
-        bind "Alt Left" "Alt h" { GoToPreviousTab; }
-        bind "Alt Right" "Alt l" { GoToNextTab; }
-        bind "Alt 1" { GoToTab 1; }
-        bind "Alt 2" { GoToTab 2; }
-        bind "Alt 3" { GoToTab 3; }
+        bind "Alt Left" { GoToPreviousTab; }
+        bind "Alt Right" { GoToNextTab; }
+        // Tabs on the same keys as workspaces in labwc (Super+Ctrl+j/k/l/;).
+        bind "Alt j" { GoToTab 1; }
+        bind "Alt k" { GoToTab 2; }
+        bind "Alt l" { GoToTab 3; }
+        bind "Alt ;" { GoToTab 4; }
         bind "Alt q" { Quit; }
     }
 }

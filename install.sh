@@ -6,6 +6,10 @@
 #   - Mousepad's editor colour scheme (lives in GSettings, not a file)
 #   - the GTK theme and dark style for every GTK app (also GSettings)
 #   - Firefox userChrome/userContent (the profile directory name is random)
+# the part that is built:
+#   - crimson-bar-outputs, which picks the monitors that show the bar (the
+#     Bar tab of System Controls), built with cargo from src/ into
+#     ~/.local/bin
 # and the part that is downloaded:
 #   - zjstatus, the tab bar plugin System Controls uses in zellij (a pinned
 #     release, checked against its sha256; not stored in the repo)
@@ -22,7 +26,8 @@
 # Usage: ./install.sh              # everything
 #        ./install.sh labwc bash   # only these (config directories in this
 #                                  # repo and/or the extras: galculator
-#                                  # gtk mousepad firefox zjstatus)
+#                                  # gtk mousepad firefox bar-outputs
+#                                  # zjstatus)
 #        ./install.sh --force      # replace files that differ, keeping .bak
 #                                  # (except your edited labwc autostart)
 #        ./install.sh --verbose    # also show what happened to every file
@@ -58,7 +63,7 @@ never_forced=(
 )
 
 files_all=(labwc quickshell alacritty wiremix zellij fastfetch bin themes applications bash fish gtk3 gtk4 gtksourceview dbus systemd)
-extras_all=(gtk galculator mousepad firefox zjstatus)
+extras_all=(gtk galculator mousepad firefox bar-outputs zjstatus)
 
 # zjstatus release for System Controls' tab bar, and its sha256 (the digest
 # GitHub publishes for that release's zjstatus.wasm).
@@ -353,6 +358,39 @@ remove_tuimenu() {
   echo "tuimenu: removed (no longer part of these dotfiles)."
 }
 
+# crimson-bar-outputs: built from src/crimson-bar-outputs, and only rebuilt
+# when that source changes (the stamp holds a hash of it). Which monitors
+# show the bar is saved in ~/.config/crimson/bar-outputs, which isn't in the
+# repo, so it stays as each machine has it.
+install_bar-outputs() {
+  local name=crimson-bar-outputs
+  local src="$repo/src/$name" bin="$HOME/.local/bin/$name"
+  local stamp="$state_dir/$name-src.sha256" want
+  want=$(cd "$src" && find Cargo.toml Cargo.lock src -type f -print0 | sort -z |
+         xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+  if [ -x "$bin" ] && [ "$(cat "$stamp" 2>/dev/null)" = "$want" ]; then
+    echo "$name: up to date."
+    return
+  fi
+  # rustup's cargo, if that's where it is and it isn't on PATH yet.
+  [ -x "$HOME/.cargo/bin/cargo" ] && PATH="$HOME/.cargo/bin:$PATH"
+  if ! command -v cargo >/dev/null; then
+    echo "$name: needs cargo to build; run ./install-packages.sh, then ./install.sh bar-outputs" >&2
+    return
+  fi
+  # Its own target dir, so building doesn't leave files in the repo.
+  if cargo install --quiet --locked --force --root "$HOME/.local" \
+       --target-dir "${XDG_CACHE_HOME:-$HOME/.cache}/crimson-dotfiles/$name-target" \
+       --path "$src"; then
+    mkdir -p "$state_dir"
+    echo "$want" > "$stamp"
+    echo "$name: built from src/$name into ~/.local/bin."
+  else
+    echo "$name: the build failed (see above). It needs Rust 1.85 or newer;" >&2
+    echo "         rustup (https://rustup.rs) gets you a current one." >&2
+  fi
+}
+
 install_zjstatus() {
   local dst="$HOME/.config/zellij/plugins/zjstatus.wasm" url tmp perms
   url="https://github.com/dj95/zjstatus/releases/download/$zjstatus_version/zjstatus.wasm"
@@ -392,7 +430,7 @@ install_zjstatus() {
 
 if [ ${#extras[@]} -gt 0 ]; then
   tmp_out=$(mktemp)
-  echo "Theme settings and downloads that aren't plain config files:"
+  echo "Theme settings, builds and downloads that aren't plain config files:"
   for e in "${extras[@]}"; do
     # Not in a pipeline, so place() can update the manifest and lists.
     "install_$e" > "$tmp_out" 2>&1 || true

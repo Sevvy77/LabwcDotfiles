@@ -1,0 +1,17 @@
+[package]
+name = "crimson-bar-outputs"
+version = "0.1.0"
+edition = "2021"
+# Debian 13's own Rust; install.sh builds it with the distro's cargo.
+rust-version = "1.85"
+description = "Pick which monitors show the Crimson Dark Quickshell bar"
+license = "MIT"
+publish = false
+
+[dependencies]
+ratatui = "0.29"
+wayland-client = "0.31"
+
+[profile.release]
+strip = true
+lto = "thin"

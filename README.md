@@ -41,6 +41,7 @@ alacritty/.config/alacritty/alacritty.toml
 wiremix/.config/wiremix/wiremix.toml  # Volume Control colours
 zellij/.config/zellij/                # System Controls (Super+o) and its tab bar
 bin/.local/bin/                       # audio-scope, system-controls
+src/crimson-bar-outputs/              # the Bar tab's TUI (Rust; built by install.sh)
 themes/.local/share/themes/OB-Crimson-Dark/   # labwc, GTK3 and GTK4 theme
 themes/.local/share/icons/Crimson-Wine/       # red icons with Adwaita fallbacks
 gtk3/, gtk4/                          # GTK settings; dark libadwaita apps
@@ -54,7 +55,8 @@ scripts/gen-gtk4-crimson.py           # regenerates the GTK4 theme (not installe
 ```
 
 `install.sh` also sets the GTK theme, icons and cursor with `gsettings`,
-Mousepad's and galculator's colours, and downloads zjstatus.
+Mousepad's and galculator's colours, builds crimson-bar-outputs with
+cargo, and downloads zjstatus.
 
 ## Quickshell
 
@@ -64,6 +66,10 @@ in `Theme.qml`.
 
 - **Bar**: clock (click for a calendar), workspaces, a tab per window
   (right-click for options), CPU and memory graphs (click for `top`), tray.
+  It's on every monitor unless you pick some in the Bar tab of System
+  Controls (below). The choice is saved per machine in
+  `~/.config/crimson/bar-outputs`, one output name per line. If none of
+  those monitors is plugged in, the bar goes back on all of them.
 - **Launcher** (Super+k): search apps by name or keyword; the ones you use
   most come first.
 - **Lock screen** (Super+l): checks your password the same way your login
@@ -101,14 +107,19 @@ the views, Up/Down zoom, Space pauses, `q` quits.
 
 ### System Controls (Super+o)
 
-Bluetooth, Networks and Volume Control as tabs of one
+Bluetooth, Networks, Volume Control and Bar as tabs of one
 [zellij](https://zellij.dev) session, all running at once:
 
 | Keys                       | Does                         |
 |----------------------------|------------------------------|
-| Alt+←/→, Alt+h/l, or click | previous / next tab          |
-| Alt+1, Alt+2, Alt+3        | Bluetooth, Networks, Volume  |
-| Alt+q, or close the window | quit all three               |
+| Alt+←/→, or click          | previous / next tab          |
+| Alt+j, Alt+k, Alt+l, Alt+; | Bluetooth, Networks, Volume, Bar (as Super+Ctrl+j/k/l/; for workspaces) |
+| Alt+q, or close the window | quit them all                |
+
+Bar is `crimson-bar-outputs`, built from `src/` by `install.sh`. It lists
+the connected monitors: Space (or a click) ticks the ones that should
+show the bar, and `a` puts it back on all of them. Changes apply as you
+make them.
 
 Every other key goes to the app. If you quit one, Enter in its tab starts it
 again. The first time (and after a zjstatus update), it asks you to allow
