@@ -40,6 +40,9 @@
     <keybind key="W-semicolon" onRelease="yes">
       <action name="Execute" command="nautilus" />
     </keybind>
+    <keybind key="W-b" onRelease="yes">
+      <action name="Execute" command="firefox" />
+    </keybind>
     <keybind key="W-n" onRelease="yes">
       <action name="Execute" command="wdisplays" />
     </keybind>
