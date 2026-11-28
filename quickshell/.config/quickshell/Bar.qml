@@ -1,7 +1,7 @@
 // The bottom bar, one per output (or only the outputs picked in
 // ~/.config/crimson/bar-outputs; see shell.qml). Left to right, as sfwbar
 // had it: clock (click for the calendar), workspaces, window tabs, CPU and
-// memory graphs (click for top), tray.
+// memory graphs (click for top), battery (laptops only), tray.
 
 import QtQuick
 import QtQuick.Layouts
@@ -54,6 +54,11 @@ PanelWindow {
         MemoryMeter {
             Layout.fillHeight: true
             Layout.margins: 2
+            barWindow: bar
+        }
+
+        Battery {
+            Layout.fillHeight: true
             barWindow: bar
         }
 
