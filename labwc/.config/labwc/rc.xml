@@ -47,10 +47,11 @@
       <action name="Execute" command="wdisplays" />
     </keybind>
     <!-- System Controls: Bluetooth, Networks, Volume Control and Bar as tabs
-         (same command as crimson-controls.desktop) -->
+         (as crimson-controls.desktop). By absolute path, since some
+         sessions (Ubuntu's) don't have ~/.local/bin on PATH. -->
     <keybind key="W-o" onRelease="yes">
       <action name="Execute">
-        <command>alacritty -o window.opacity=1 --class crimson-controls --title "System Controls" -e system-controls</command>
+        <command>sh -c 'exec alacritty -o window.opacity=1 --class crimson-controls --title "System Controls" -e "$HOME/.local/bin/system-controls"'</command>
       </action>
     </keybind>
     <keybind key="W-h" onRelease="yes">

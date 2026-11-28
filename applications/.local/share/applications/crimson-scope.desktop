@@ -8,7 +8,7 @@ Name=Audio Scope
 GenericName=Oscilloscope
 Comment=Oscilloscope, vectorscope and spectrum of what's playing (scope-tui)
 Icon=audio-x-generic
-Exec=alacritty -o window.opacity=1 --class crimson-scope --title "Audio Scope" -e audio-scope
+Exec=sh -c "PATH=\\"\\$HOME/.local/bin:\\$PATH\\" exec alacritty -o window.opacity=1 --class crimson-scope --title \\"Audio Scope\\" -e audio-scope"
 Terminal=false
 Categories=AudioVideo;Audio;
 Keywords=scope;vectorscope;spectrum;visualizer;waveform;scope-tui;

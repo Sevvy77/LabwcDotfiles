@@ -7,7 +7,7 @@ Name=Network
 GenericName=Network Manager
 Comment=Connect to Wi-Fi and manage network devices (nmrs-tui)
 Icon=network-wireless
-Exec=alacritty -o window.opacity=1 --class crimson-network --title "Network" -e nmrs-tui
+Exec=sh -c "PATH=\\"\\$HOME/.local/bin:\\$PATH\\" exec alacritty -o window.opacity=1 --class crimson-network --title \\"Network\\" -e nmrs-tui"
 Terminal=false
 Categories=Settings;Network;
 Keywords=wifi;wi-fi;wireless;ethernet;internet;networkmanager;nmtui;nmrs;

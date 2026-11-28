@@ -7,7 +7,7 @@ Name=Bluetooth
 GenericName=Bluetooth Manager
 Comment=Pair and connect Bluetooth devices (bluetui)
 Icon=bluetooth
-Exec=alacritty -o window.opacity=1 --class crimson-bluetooth --title "Bluetooth" -e bluetui
+Exec=sh -c "PATH=\\"\\$HOME/.local/bin:\\$PATH\\" exec alacritty -o window.opacity=1 --class crimson-bluetooth --title \\"Bluetooth\\" -e bluetui"
 Terminal=false
 Categories=Settings;HardwareSettings;
 Keywords=pair;headset;headphones;mouse;keyboard;controller;blueman;bluetui;

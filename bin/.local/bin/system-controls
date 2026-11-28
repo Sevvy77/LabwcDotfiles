@@ -5,6 +5,15 @@
 # crimson-controls.desktop, in an alacritty window of class crimson-controls.
 # Alt+j/k/l/; goes to a tab (the same keys as workspaces, which are
 # Super+Ctrl+j/k/l/;), Alt+←/→ or a click switches tabs; Alt+q quits.
+
+# zellij, bluetui, nmrs-tui, wiremix and crimson-bar-outputs may be cargo
+# builds in ~/.local/bin, which isn't on PATH in every session (e.g. labwc
+# on Ubuntu).
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) PATH="$HOME/.local/bin:$PATH"; export PATH ;;
+esac
+
 cfg="$HOME/.config/zellij/system-controls.kdl"
 layouts="$HOME/.config/zellij/layouts"
 

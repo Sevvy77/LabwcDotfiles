@@ -7,7 +7,7 @@ Name=System Controls
 GenericName=System Controls
 Comment=Bluetooth, networks, volume and the bar's monitors in one window (zellij)
 Icon=preferences-system
-Exec=alacritty -o window.opacity=1 --class crimson-controls --title "System Controls" -e system-controls
+Exec=sh -c "PATH=\\"\\$HOME/.local/bin:\\$PATH\\" exec alacritty -o window.opacity=1 --class crimson-controls --title \\"System Controls\\" -e system-controls"
 Terminal=false
 Categories=Settings;
 Keywords=bluetooth;network;wifi;volume;sound;audio;settings;controls;bluetui;nmrs-tui;wiremix;zellij;bar;monitor;display;output;
